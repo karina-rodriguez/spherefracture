@@ -35,7 +35,13 @@ public:
     bool checkRightTurn(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2);
 
     // Tim's implementation:
+    bool  tryCut(const std::vector<glm::vec3> &fragment,
+                 const std::vector<glm::vec3> &fracture,
+                 std::vector<glm::vec3> &result1,
+                 std::vector<glm::vec3> &result2);
     bool  spherePolyIntersect(const std::vector<glm::vec3> &poly1,
                               const std::vector<glm::vec3> &poly2,
                               std::vector<glm::vec3> &result);
+    double  spherePolyArea(const std::vector<glm::vec3> &poly);
+    double  spherePolyAngle(const std::vector<glm::vec3> &poly, int idx);
 };
