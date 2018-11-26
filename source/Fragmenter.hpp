@@ -18,7 +18,9 @@ private:
     float densitysphere;
     float maxpeak;
     View* view;
-    const float epsilon = 1e-6;
+    
+    static const float  epsilon;
+    static bool  epsilonSame(const glm::vec3 &a, const glm::vec3 &b);
     
     //set the fragment and its level
     std::vector<Fragment*> fragments;
@@ -31,5 +33,9 @@ public:
     void listAllFragments();
     bool computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2,glm::vec3& intersectionpoint);
     bool checkRightTurn(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2);
-        
+
+    // Tim's implementation:
+    bool  spherePolyIntersect(const std::vector<glm::vec3> &poly1,
+                              const std::vector<glm::vec3> &poly2,
+                              std::vector<glm::vec3> &result);
 };
