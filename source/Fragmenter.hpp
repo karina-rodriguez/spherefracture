@@ -19,8 +19,8 @@ private:
     float maxpeak;
     View* view;
     
-    static const float  epsilon;
-    static bool  epsilonSame(const glm::vec3 &a, const glm::vec3 &b);
+    static const double  epsilon;
+    static bool  epsilonSame(const glm::vec3 &a, const glm::vec3 &b, double epsilonScale=1.0);
     
     //set the fragment and its level
     std::vector<Fragment*> fragments;
@@ -31,17 +31,20 @@ public:
     int testFragment(JaggedLine* jline);
     bool generateTwoFragments(Fragment* fragment, JaggedLine* jline);
     void listAllFragments();
-    bool computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2,glm::vec3& intersectionpoint);
-    bool checkRightTurn(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2);
+    
+    static bool  computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2,glm::vec3& intersectionpoint);
+    static bool  checkRightTurn(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2);
 
     // Tim's implementation:
     bool  tryCut(const std::vector<glm::vec3> &fragment,
                  const std::vector<glm::vec3> &fracture,
                  std::vector<glm::vec3> &result1,
                  std::vector<glm::vec3> &result2);
-    bool  spherePolyIntersect(const std::vector<glm::vec3> &poly1,
-                              const std::vector<glm::vec3> &poly2,
-                              std::vector<glm::vec3> &result);
-    double  spherePolyArea(const std::vector<glm::vec3> &poly);
-    double  spherePolyAngle(const std::vector<glm::vec3> &poly, int idx);
+    static bool  spherePolyIntersect(const std::vector<glm::vec3> &poly1,
+                                     const std::vector<glm::vec3> &poly2,
+                                     std::vector<glm::vec3> &result);
+    static double  spherePolyArea(const std::vector<glm::vec3> &poly);
+    static double  spherePolyAngle(const std::vector<glm::vec3> &poly, int idx);
+
+    static bool  tests();
 };

@@ -3,7 +3,7 @@
 #include "JaggedLine.hpp"
 
 
-const float  Fragmenter::epsilon = 1e-6;
+const double  Fragmenter::epsilon = 1e-6;
 
 template<typename T>
 std::string  str(const T &val);
@@ -251,7 +251,8 @@ void Fragmenter::listAllFragments(){
 
 }
 
-bool Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2, glm::vec3& intersectionpoint){
+bool  Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2, glm::vec3& intersectionpoint)
+{
     double lambda[2];
     lambda[0] = -(glm::dot(glm::cross(poly2p2, poly2p1),poly1p1) /
                   glm::dot(glm::cross(poly2p2,poly2p1),poly1p2-poly1p1));
@@ -259,9 +260,9 @@ bool Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::
     lambda[1] = -(glm::dot(glm::cross(poly1p2,poly1p1),poly2p1) /
                   glm::dot(glm::cross(poly1p2,poly1p1),poly2p2-poly2p1));
     
-    std::cout << str(poly1p1) << " -- " << str(poly1p2) << ";   " << str(poly1p1) << " -- " << str(poly1p2) << std::endl;
-    std::cout << "LAMBDA1: "<< lambda[0] << std::endl;
-    std::cout << "LAMBDA2: "<< lambda[1] << std::endl;
+    //std::cout << str(poly1p1) << " -- " << str(poly1p2) << ";   " << str(poly1p1) << " -- " << str(poly1p2) << std::endl;
+    //std::cout << "LAMBDA1: "<< lambda[0] << std::endl;
+    //std::cout << "LAMBDA2: "<< lambda[1] << std::endl;
 
     std::vector<bool> inside(2);
     for (int i=0; i<2; i++) {
@@ -317,12 +318,26 @@ bool Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::
     return false;
 }
 
-bool Fragmenter::checkRightTurn(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2){
+bool  Fragmenter::checkRightTurn(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2)
+{
     // TODO
     return false;  // [TW:] added to suppress warning
 }
 
 //////////////////////////////////////////////////////////////////////////////
+
+bool  Fragmenter::tests()
+{
+    bool  success = true;
+    
+    std::vector<glm::vec3>  foo = {{1,0,0},{sqrt(2.0),sqrt(2.0),0},{0,0,1}};
+    
+    double                  fooArea = spherePolyArea(foo);
+    //std::cout << "AREA: " << fooArea << std::endl;
+    success = success && (fabs(fooArea - 0.25*M_PI) < 1e-6);
+
+    return success;
+}
 
 bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
                         const std::vector<glm::vec3> &fracture,
@@ -346,22 +361,37 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
     return false;
 }
 
-bool  Fragmenter::epsilonSame(const glm::vec3 &a, const glm::vec3 &b)
+bool  Fragmenter::epsilonSame(const glm::vec3 &a, const glm::vec3 &b, double epsilonScale)
 {
-    return glm::length(a - b) < epsilon;
+    return glm::length(a - b) <= epsilonScale*epsilon;
 }
 
-// NOTE: this code heavily relies on computeIntersection to *exclude*
-// half(!) an epsilon ball of each line around its starting point and
-// to *include* a full epsilon ball around its end point. I already
-// adjusted computeIntersection accordingly.
-//
+//! Intersection of two spherical polygons.
+/*! Polygons' orientation is clockwise around their inner region.
+ *
+ *  Returns true if input polygons actually intersect AND if the resulting polygon is non-empty.
+ *
+ *  If intersection would yield multiple components, \a result
+ *  contains only one of them, and computeIntersection() still returns
+ *  true. (The case of multiple components is explicitly tested for by
+ *  in tryCut(), which relies on that behaviour.)
+ * 
+ *  NOTE: this code heavily relies on computeIntersection to *exclude*
+ *  half(!) an epsilon ball of each line around its starting point and
+ *  to *include* a full epsilon ball around its end point. I already
+ *  adjusted computeIntersection accordingly.
+ */
 bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
                                       const std::vector<glm::vec3> &poly2,
                                       std::vector<glm::vec3> &result)
 {
     const std::vector<glm::vec3>  *polys[2] = {&poly1, &poly2};
 
+    if (!tests()) {
+        std::cerr << "TESTS FAILED.\n";
+        exit(1);
+    }
+    
     int  curPoly = 0; // then one you’re “sitting on” while intersecting with the other
     int  idx = 0;
 
@@ -387,14 +417,14 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
                 break;
             }
         }
-        std::cout << "intersects: " << intersects << " " << jdx << std::endl;
+        std::cout << "intersects: " << intersects << " " << jdx << "/" << (int)(*polys[1-curPoly]).size() << std::endl;
         
         if (!intersects) {
             // no intersection, so we add end point of this edge and
             // proceed on current polygon:
             idx = idxSucc;
             idxSucc = (idx + 1) % (*polys[curPoly]).size();
-            if (!epsilonSame(result.back(), (*polys[curPoly])[idx]))
+            if (!epsilonSame(result.back(), (*polys[curPoly])[idx], 2.0))
                 result.push_back((*polys[curPoly])[idx]);
         } else {
             noCut = false;
@@ -404,13 +434,13 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
                 // discard what has been collected so far and start
                 // from intersection point:
                 result.clear();
-                if (!epsilonSame(result.back(), intersection))
+                if (!epsilonSame(result.back(), intersection, 2.0))
                     result.push_back(intersection);
                 // leave idx as is, even if "behind" intersection point
             } else {
                 // we are leaving the cut polygon, so add intersection
                 // point and switch polygon:
-                if (!epsilonSame(result.back(), intersection))
+                if (!epsilonSame(result.back(), intersection, 2.0))
                     result.push_back(intersection);
                 idx = jdx;
                 idxSucc = jdxSucc;
@@ -419,13 +449,15 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
             }
         }
 
-        if ((curPoly == 0 && idx == 0) ||
-            (result.size() && epsilonSame(result.front(), result.back()))) {
+        if (curPoly == 0 && idx == 0)
+            break;
+
+        if (result.size() && epsilonSame(result.front(), result.back())) {
             result.pop_back();
             break;
         }
     }
-    // TODO: also return false if cut leads to multiple components:
+
     return !noCut && result.size() > 0;
 }
 
@@ -437,7 +469,6 @@ double  Fragmenter::spherePolyArea(const std::vector<glm::vec3> &poly)
     return sum - M_PI * ((int)poly.size() - 2);
 }
 
-// STILL UNTESTED!
 double  Fragmenter::spherePolyAngle(const std::vector<glm::vec3> &poly, int idx)
 {
     int  n = (int)poly.size();
@@ -449,12 +480,12 @@ double  Fragmenter::spherePolyAngle(const std::vector<glm::vec3> &poly, int idx)
     pc = glm::normalize(pc);
     pn = glm::normalize(pn);
 #endif
-    glm::vec3  np = glm::normalize(glm::cross(pc, pp));
-    glm::vec3  nn = glm::normalize(glm::cross(pn, pc));
+    glm::vec3  np = glm::normalize(glm::cross(pp, pc));
+    glm::vec3  nn = glm::normalize(glm::cross(pc, pn));
 
-    glm::vec3  tp = glm::cross(pc, np);
+    glm::vec3  tp = glm::cross(np, pc);
 
-    return atan2(-glm::dot(nn, tp), -glm::dot(nn, np));
+    return fmod(atan2(glm::dot(nn, tp), glm::dot(nn, np)) + M_PI, 2.0*M_PI);
 }
 
 //////////////////////////////////////////////////////////////////////////////
