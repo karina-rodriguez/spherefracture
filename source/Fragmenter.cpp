@@ -2,6 +2,7 @@
 #include "Fragment.hpp"
 #include "JaggedLine.hpp"
 
+#include <assert.h>
 
 const double  Fragmenter::epsilon = 1e-6;
 
@@ -234,10 +235,11 @@ int Fragmenter::testFragment(JaggedLine* jline)
         }
     }
 
-    Fragment* fragment1 = new Fragment(view->getVertexArrayID(), glm::vec3(1.0,0.0,0.0),GL_LINE_STRIP,GEO_PATH,result);
-    fragment1->calculateBoundingBox();
-    view->addGeometry(fragment1);
-
+    if (result.size()) {
+        Fragment* fragment1 = new Fragment(view->getVertexArrayID(), glm::vec3(1.0,0.0,0.0),GL_LINE_STRIP,GEO_PATH,result);
+        fragment1->calculateBoundingBox();
+        view->addGeometry(fragment1);
+    }
     return 0;  // [TW:] added to suppress warning
 }
 
@@ -386,6 +388,11 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
                                       std::vector<glm::vec3> &result)
 {
     const std::vector<glm::vec3>  *polys[2] = {&poly1, &poly2};
+#if 0
+    // for debug purposes, reverse cut polygon:
+    std::vector<glm::vec3>  revPoly2(poly2.rbegin(), poly2.rend());
+    polys[1] = &revPoly2;
+#endif
 
     if (!tests()) {
         std::cerr << "TESTS FAILED.\n";
@@ -417,7 +424,7 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
                 break;
             }
         }
-        std::cout << "intersects: " << intersects << " " << jdx << "/" << (int)(*polys[1-curPoly]).size() << std::endl;
+        //std::cout << "intersects: " << intersects << " " << jdx << "/" << (int)(*polys[1-curPoly]).size() << std::endl;
         
         if (!intersects) {
             // no intersection, so we add end point of this edge and
@@ -434,12 +441,12 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
                 // discard what has been collected so far and start
                 // from intersection point:
                 result.clear();
-                if (!epsilonSame(result.back(), intersection, 2.0))
-                    result.push_back(intersection);
+                result.push_back(intersection);
                 // leave idx as is, even if "behind" intersection point
             } else {
                 // we are leaving the cut polygon, so add intersection
                 // point and switch polygon:
+                assert(result.size());
                 if (!epsilonSame(result.back(), intersection, 2.0))
                     result.push_back(intersection);
                 idx = jdx;
@@ -452,7 +459,7 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
         if (curPoly == 0 && idx == 0)
             break;
 
-        if (result.size() && epsilonSame(result.front(), result.back())) {
+        if (result.size() > 1 && epsilonSame(result.front(), result.back(), 2.0)) {
             result.pop_back();
             break;
         }
