@@ -16,6 +16,19 @@ std::string  str(const glm::vec3 &val) {
     return std::string(s);
 }
 
+template<typename V>
+std::string  str(const std::vector<V> &v) {
+    std::string  s;
+    s.append("[ ");
+    for (int i=0; i<(int)v.size(); ++i) {
+        if (i > 0)
+            s.append(", ");
+        s.append(str(v[i]));
+    }
+    s.append(" ]");
+    return s;
+}
+
 Fragmenter::Fragmenter(int numparts, glm::vec3 color, float radius, float densityline, float densitysphere, float maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view){
     actualparts = 0;
     actuallevel = 0;
@@ -456,15 +469,16 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
             }
         }
 
-        if (curPoly == 0 && idx == 0)
-            break;
-
         if (result.size() > 1 && epsilonSame(result.front(), result.back(), 2.0)) {
             result.pop_back();
             break;
         }
+        
+        if (curPoly == 0 && idx == 0)
+            break;
     }
 
+    //std::cout << str(result) << std::endl;
     return !noCut && result.size() > 0;
 }
 
