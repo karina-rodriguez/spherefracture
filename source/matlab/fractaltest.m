@@ -85,5 +85,37 @@ plot3(circ2(1,:), circ2(2,:), circ2(3,:), 'k:');
 plot3(circ3(1,:), circ3(2,:), circ3(3,:), 'k:');
 hold off;
 
+if 0
+    % test spherePolyInsideTest()
+    %
+    %   Result so far: works in principle, HOWEVER, points near the polygon
+    %   receive (signed) winding number 0 and hence tend to be
+    %   misclassified as outside in 50% of the cases.
+    %
+    rpts = 2.*rand(3,1000)-1;
+    rpts = normalize(rpts(:,dot(rpts,rpts) < 1));
+    hold on;
+    b = spherePolyInsideTest(xyz, rpts);
+    plot3(rpts(1,b), rpts(2,b), rpts(3,b), '.g');
+    plot3(rpts(1,~b), rpts(2,~b), rpts(3,~b), '.r');
+    hold off;
+end
+
+function b = spherePolyInsideTest(poly, point)
+if size(point,2) > 1
+    b = zeros(1, size(point,2), 'logical');
+    for i=1:numel(b)
+        b(i) = spherePolyInsideTest(poly, point(:,i));
+    end
+else
+    point = normalize(point);  % paranoia
+    poly = poly - point.*sum(point.*poly, 1);   % project into plane orthogonal to point
+    poly = normalize(poly);
+    c = dot(poly(:, [1:end,1]), poly(:, [2:end,1,2]));
+    s = dot(repmat(point, 1, 1+size(poly,2)), cross(poly(:, [1:end,1]), poly(:, [2:end,1,2])));
+    b = floor(0.5 + sum(atan2(s, c))./(2*pi)) > 0;
+end
+
+
 function x = normalize(x)
 x = x ./ sqrt(sum(x.^2,1));
