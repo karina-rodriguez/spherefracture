@@ -336,10 +336,7 @@ bool  Fragmenter::tests()
 {
     bool  success = true;
     
-    std::vector<glm::vec3>  foo;
-    foo.push_back(glm::vec3(1,0,0));
-    foo.push_back(glm::vec3(sqrt(2.0),sqrt(2.0),0));
-    foo.push_back(glm::vec3(0,0,1));
+    std::vector<glm::vec3>  foo = { {1,0,0}, {sqrt(2.0),sqrt(2.0),0}, {0,0,1} };
     
     double                  fooArea = spherePolyArea(foo);
     //std::cout << "AREA: " << fooArea << std::endl;
