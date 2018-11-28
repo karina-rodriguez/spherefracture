@@ -453,7 +453,7 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
         } else {
             noCut = false;
             if (glm::dot(result.back(),
-                         glm::cross((*polys[1-curPoly])[jdx], (*polys[1-curPoly])[jdxSucc])) > 0) {
+                         glm::cross((*polys[1-curPoly])[jdx], (*polys[1-curPoly])[jdxSucc])) < 0) {
                 // we are approaching from outside the cut polygon ->
                 // discard what has been collected so far and start
                 // from intersection point:

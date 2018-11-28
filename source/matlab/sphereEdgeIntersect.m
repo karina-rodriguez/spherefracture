@@ -8,7 +8,7 @@ function  [ intersectionpoint, intersects ] = sphereEdgeIntersect(poly1p1, poly1
 epsilon = 1e-6;
 intersectionpoint = [];
 intersects = false;
-if 0
+if 1
     %
     %  Tim's implementation, using alternative derivation
     %

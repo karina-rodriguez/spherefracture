@@ -23,11 +23,11 @@ if 1
     spherePolyPlot(fracture);
     
     pool2 = {};
-    for i=1:1
+    for i=1:2
         [ result1, ~, success, intersectionPoints ] = spherePolyIntersect(pool{i}, fracture);
         if success
             hold on;
-            plot3(intersectionPoints(1,:),intersectionPoints(2,:),intersectionPoints(3,:),'*m');
+            %plot3(intersectionPoints(1,:),intersectionPoints(2,:),intersectionPoints(3,:),'*m');
             %keyboard;
             pool2{end+1} = result1;
             [ result2, ~, success, intersectionPoints ] = spherePolyIntersect(pool{i}, fracture(:,end:-1:1));
