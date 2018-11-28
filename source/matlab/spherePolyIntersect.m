@@ -64,7 +64,7 @@ for steps=1:1000
         if nargout >= 4
             intersectionPoints(:,end+1) = intersection;
         end
-        if dot(result(:,end), cross(polys{3-curPoly}(:,jdx), polys{3-curPoly}(:,jdxSucc))) > 0
+        if dot(result(:,end), cross(polys{3-curPoly}(:,jdx), polys{3-curPoly}(:,jdxSucc))) < 0
             % we are approaching from outside the cut polygon ->
             % discard what has been collected so far and start
             % from intersection point:
@@ -87,8 +87,8 @@ for steps=1:1000
         end
     end
     
-    if size(result,2) > 1 && epsilonSame(result(:,1), result(:,end), 2.0)
-        result = result(:,end-1);
+    if size(result,2) > 1 && epsilonSame(result(:,1), result(:,end), 1.0)
+        result = result(:,1:end-1);
         break;
     end
     

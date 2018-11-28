@@ -14,8 +14,8 @@ if success
         
         relAreaErr = 2.0 * abs(totalArea - originalArea) ./ (totalArea + originalArea);
         
-        success = relAreaErr < 0.001 ...              % maximum relative error of split (to catch non-simple polygons)
-            && max(area1 / area2, area2 / area1) < 4  % maximum area ratio
+        success = relAreaErr < 0.001 ...               % maximum relative error of split (to catch non-simple polygons)
+            && max(area1 / area2, area2 / area1) < 4;  % maximum area ratio
         fprintf(1, 'a1, a2, sum, relErr; success:  %g, %g, %g, %g; %d\n', area1, area2, totalArea, relAreaErr, success);
     end
 end
