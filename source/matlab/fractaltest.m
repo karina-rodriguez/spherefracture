@@ -4,8 +4,8 @@ function fractaltest(useExistingFigure)
 %
 if nargin < 1
     close all;
-    m = 2;
-    n = 2;
+    m = 3;
+    n = 4;
     figure;
     for i=1:m*n
         subplot(m, n, i);
@@ -20,17 +20,19 @@ end
 
 % Parameters
 %
-if 1
-    jitter = 0.28;             % relative jitter of midpoint along curve
+%   two reasonable set of parameters follow
+%
+if 0
+    jitter = 0.28;              % relative jitter of midpoint along curve
     amplitude = jitter / 3.0;   % relative amplitude
     decay = 0.9;                % relative amplitude/jitter decay per iteration
     niter = 5;                  % number of fractal iterations
     m = 3;                      % initial vertex count; must be m>=3
 else
-    jitter = 0.333;             % relative jitter of midpoint along curve
-    amplitude = jitter / 3.0;   % relative amplitude
+    jitter = 0.4;               % relative jitter of midpoint along curve
+    amplitude = jitter / 2.5;   % relative amplitude
     decay = 0.9;                % relative amplitude/jitter decay per iteration
-    niter = 5;                  % number of fractal iterations
+    niter = 4;                  % number of fractal iterations
     m = 4;                      % initial vertex count; must be m>=3
 end
 
