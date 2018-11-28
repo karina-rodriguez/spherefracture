@@ -32,7 +32,7 @@ std::string  str(const std::vector<V> &v) {
 Fragmenter::Fragmenter(int numparts, glm::vec3 color, float radius, float densityline, float densitysphere, float maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view){
     actualparts = 0;
     actuallevel = 0;
-    JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,GEO_PATH, densityline,maxpeak, true,glm::vec3(0,1,0));
+    JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,GEO_PATH, densityline,maxpeak, true);
     
     //seed two initial parts to fragment
     Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::vec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,jline->getVertices());
@@ -57,32 +57,18 @@ Fragmenter::~Fragmenter() {
 int Fragmenter::fragment(){
    
 
+    for (int i=0;i<10;i++){
+        JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
+        jline->calculateBoundingBox();
+        // jline->exportPoints();
+        std::vector<glm::vec3> result;
+        std::vector<glm::vec3> result2;
 
-    
-    
-    //while (actualparts<numparts){
-    
-    
-    //Go through all our fragments
-    //commented for the moment
-/*    bool foundFragment =false;
-    while (!fragments.empty())
-    {
-        Fragment* fragment = fragments.back();
-        //get a fragment from our list which has not been processed
-        if (fragment->getLevel()==actuallevel){
-            foundFragment = true;
-            //remove it from our list as we are going to process it
-            fragments.pop_back();
-            if(!generateTwoFragments(fragment,jline)) {
-                std::cout << "something went wrong cutting" << std::endl;
-                break;
-            }
-        }
-        if (!foundFragment) actuallevel++;
+        std::cout << tryCut(fragments.front()->getVertices(), jline->getVertices(), result,result2) << std::endl;
+
+     
     }
     
-    listAllFragments();*/
     
 
     return 1;
@@ -127,9 +113,14 @@ bool Fragmenter::generateTwoFragments(Fragment* fragment, JaggedLine* jline)
 int Fragmenter::testFragment(JaggedLine* jline)
 {
     std::vector<glm::vec3> result;
-    
+    std::vector<glm::vec3> result2;
+
+   // std::cout << "TESTS " << std::endl;
     if (1) {
-        spherePolyIntersect(fragments.front()->getVertices(), jline->getVertices(), result);
+       // spherePolyIntersect(fragments.front()->getVertices(), jline->getVertices(), result);
+        
+        std::cout << tryCut(fragments.front()->getVertices(), jline->getVertices(), result,result2) << std::endl;
+
     } else {
         std::vector<glm::vec3> polys[2];
         polys[0] = fragments.front()->getVertices();
@@ -345,7 +336,10 @@ bool  Fragmenter::tests()
 {
     bool  success = true;
     
-    std::vector<glm::vec3>  foo = {{1,0,0},{sqrt(2.0),sqrt(2.0),0},{0,0,1}};
+    std::vector<glm::vec3>  foo;
+    foo.push_back(glm::vec3(1,0,0));
+    foo.push_back(glm::vec3(sqrt(2.0),sqrt(2.0),0));
+    foo.push_back(glm::vec3(0,0,1));
     
     double                  fooArea = spherePolyArea(foo);
     //std::cout << "AREA: " << fooArea << std::endl;
@@ -359,15 +353,28 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
                         std::vector<glm::vec3> &result1,
                         std::vector<glm::vec3> &result2)
 {
+    std::cout << "FRAGMENT: " << str(fragment) << std::endl;
+    std::cout << "FRAGMENT: " << str(fracture) << std::endl;
+    
     double  originalArea = spherePolyArea(fragment);
+    std::cout << "originalArea " << originalArea << std::endl;
 
     if (spherePolyIntersect(fragment, fracture, result1)) {
         std::vector<glm::vec3>  revFracture(fracture.rbegin(), fracture.rend());
         if (spherePolyIntersect(fragment, revFracture, result2)) {
             double  area1 = spherePolyArea(result1);
+            std::cout << "area1 " << area1 << std::endl;
+
             double  area2 = spherePolyArea(result2);
+            std::cout << "area2 " << area2 << std::endl;
+
             double  totalArea = area1 + area2;
+            std::cout << "totalArea " << totalArea << std::endl;
+
             double  relAreaErr = 2.0 * fabs(totalArea - originalArea) / (totalArea + originalArea);
+            std::cout << "relAreaErr " << relAreaErr << std::endl;
+
+//            std::cout << "result: " << (relAreaErr < 0.001 &&  std::max(area1 / area2, area2 / area1) < 4.0) << std::endl;
             return
                 relAreaErr < 0.001 &&                                       // single pieces, please
                              std::max(area1 / area2, area2 / area1) < 4.0;  // maximum area ratio

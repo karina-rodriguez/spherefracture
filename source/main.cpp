@@ -109,13 +109,16 @@ int main(int argc, char *argv[] ){
     //create a new Fragmenter object with num parts to be fragmented
     Fragmenter* fragmenter = new Fragmenter(numparts,glm::vec3(1,0,0),radius,densityline,densitysphere,maxpeak,myview);
     //this is a test fragment to check how it is working
-    JaggedLine* jline = new JaggedLine(vertexarrayID,glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true,glm::vec3(1.0,0.0,0.0));
+  /*  for (int i=0;i<10;i++){
+    JaggedLine* jline = new JaggedLine(vertexarrayID,glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
     jline->calculateBoundingBox();
     // jline->exportPoints();
     jline->setNumSteps(steps);
     //************ TEST the partition of the first fragment, to be replaced by: fragment()
     fragmenter->testFragment(jline);
-    myview->addGeometry(jline);
+ //   myview->addGeometry(jline);
+    }*/
+    fragmenter->fragment();
 
 
     
