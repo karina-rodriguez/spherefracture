@@ -285,7 +285,7 @@ bool  Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm:
 
         //compute second intersection point
         glm::vec3 vecintersectionpoint2 = glm::vec3(poly2p2-poly2p1);
-        glm::vec3 vecintersectionpoint2bylambda = glm::vec3(vecintersectionpoint2.x*lambda[0], vecintersectionpoint2.y*lambda[0], vecintersectionpoint2.z*lambda[0]);
+        glm::vec3 vecintersectionpoint2bylambda = glm::vec3(vecintersectionpoint2.x*lambda[1], vecintersectionpoint2.y*lambda[1], vecintersectionpoint2.z*lambda[1]);
         glm::vec3 intersectionpoint2 = poly2p1 + vecintersectionpoint2bylambda;
         
         //std::cout << "Intersection point 2: "<< intersectionpoint2.x << ", " << intersectionpoint2.y << ", " << intersectionpoint2.z << std::endl;
@@ -480,9 +480,10 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
             result.pop_back();
             break;
         }
-        
-        if (curPoly == 0 && idx == 0)
-            break;
+
+        // [TW:] it looks like this termination criterion was poorly motivated and even introduces a bug:
+        //if (curPoly == 0 && idx == 0)
+        //    break;
     }
 
     //std::cout << str(result) << std::endl;

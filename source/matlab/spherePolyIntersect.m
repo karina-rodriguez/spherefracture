@@ -41,7 +41,7 @@ for steps=1:1000
     jdx=0;
     jdxSucc=0;
     for jdx=1:size(polys{3-curPoly},2)
-        jdxSucc = 1+mod(jdx+1,size(polys{3-curPoly},2));
+        jdxSucc = 1+mod(jdx, size(polys{3-curPoly},2));
         [ intersection, success ] = sphereEdgeIntersect( ...
             result(:,end), polys{curPoly}(:,idxSucc), ...
             polys{3-curPoly}(:,jdx), polys{3-curPoly}(:,jdxSucc));
@@ -92,7 +92,7 @@ for steps=1:1000
         break;
     end
     
-    if curPoly == 1 && idx == 1
+    if 0 && curPoly == 1 && idx == 1  % [TW:] fix(?) that diables this condition
         break;
     end
 end
