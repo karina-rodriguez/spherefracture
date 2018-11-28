@@ -4,7 +4,10 @@
 project( breakSphere )
 
 
-cmake_minimum_required(VERSION 2.8.11)
+#cmake_minimum_required(VERSION 2.8.11)
+
+cmake_minimum_required(VERSION 3.1.0)   # for CMAKE_CXX_STANDARD
+set (CMAKE_CXX_STANDARD 11)
 
 # CGAL and its components
 #find_package( CGAL QUIET COMPONENTS  )
