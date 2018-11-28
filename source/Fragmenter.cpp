@@ -29,7 +29,7 @@ std::string  str(const std::vector<V> &v) {
     return s;
 }
 
-Fragmenter::Fragmenter(int numparts, glm::vec3 color, float radius, float densityline, float densitysphere, float maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view){
+Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double densityline, double densitysphere, double maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view){
     actualparts = 0;
     actuallevel = 0;
     JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,GEO_PATH, densityline,maxpeak, true);
@@ -38,7 +38,7 @@ Fragmenter::Fragmenter(int numparts, glm::vec3 color, float radius, float densit
     Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::vec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,jline->getVertices());
     fragment0->calculateBoundingBox();
     fragment0->setLevel(0);
-    view->addGeometry(fragment0);
+ //   view->addGeometry(fragment0);
     fragments.push_back(fragment0);
     actualparts++;
     
@@ -50,6 +50,9 @@ Fragmenter::Fragmenter(int numparts, glm::vec3 color, float radius, float densit
     actualparts++;
     
 }
+Fragmenter::Fragmenter(){
+    
+}
 Fragmenter::~Fragmenter() {
 }
 
@@ -58,15 +61,96 @@ int Fragmenter::fragment(){
    
 
     for (int i=0;i<10;i++){
-        JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
+      /*  JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
         jline->calculateBoundingBox();
         // jline->exportPoints();
         std::vector<glm::vec3> result;
         std::vector<glm::vec3> result2;
 
-        std::cout << tryCut(fragments.front()->getVertices(), jline->getVertices(), result,result2) << std::endl;
+        std::cout << tryCut(fragments.front()->getVertices(), jline->getVertices(), result,result2) << std::endl;*/
 
-     
+    JaggedLine* jline1 = new JaggedLine(view->getVertexArrayID(),glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
+        jline1->calculateBoundingBox();
+       // view->addGeometry(jline1);
+        
+    JaggedLine* jline2 = new JaggedLine(view->getVertexArrayID(),glm::vec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
+        view->addGeometry(jline2);
+        jline2->calculateBoundingBox();
+        
+        std::vector<glm::vec3> line1 = jline1->getVertices();
+        std::vector<glm::vec3> line2 = jline2->getVertices();
+        
+        for (std::vector<glm::vec3>::iterator it = line1.begin() ; it != line1.end()-1; ++it){
+            glm::vec3 p1p1 = *it;
+            auto nx = std::next(it, 1);
+            glm::vec3 p1p2 = *nx;
+            
+            std::cout << "Vertex actual p1: " << p1p1.x << " " << p1p1.y << " " << p1p1.z << std::endl;
+            std::cout << "Vertex next p1:" << p1p2.x << " " << p1p2.y << " " << p1p2.z << std::endl;
+            
+            
+/*            std::vector<glm::vec3> frag1;
+            frag1.push_back(p1p1);
+            frag1.push_back(p1p2);
+            
+            Fragment* fragment1 = new Fragment(view->getVertexArrayID(), glm::vec3(1.0,0.0,0.0),GL_LINE_STRIP,GEO_SHAPE,frag1);
+            fragment1->calculateBoundingBox();
+            view->addGeometry(fragment1);
+            
+            
+            */
+            
+            for (std::vector<glm::vec3>::iterator it1 = line2.begin() ; it1 != line2.end()-1; ++it1){
+
+                glm::vec3 p2p1 = *it;
+                auto nx1 = std::next(it1, 1);
+                glm::vec3 p2p2 = *nx1;
+               
+              /*  std::vector<glm::vec3> frag2;
+                frag2.push_back(p2p1);
+                frag2.push_back(p2p2);
+                Fragment* fragment2 = new Fragment(view->getVertexArrayID(), glm::vec3(1.0,0.0,1.0),GL_LINE_STRIP,GEO_SHAPE,frag2);
+                fragment2->calculateBoundingBox();
+                view->addGeometry(fragment2);
+                
+                std::cout << "Next vertex actual p1: " << p2p1.x << " " << p2p1.y << " " << p2p1.z << std::endl;
+                std::cout << "Vertex next p1:" << p2p2.x << " " << p2p2.y << " " << p2p2.z << std::endl;
+                */
+                glm::vec3 result;
+                if (computeIntersection(p1p1, p1p2, p2p1, p2p2, result)){
+                    
+                    std::cout << "INTERSECT !! " << std::endl;
+                    //create two geometries to see the lines
+                    std::vector<glm::vec3> frag1;
+                    std::vector<glm::vec3> frag2;
+                    std::vector<glm::vec3> frag3;
+
+                    frag1.push_back(p1p1);
+                    frag1.push_back(p1p2);
+                    
+                    frag2.push_back(p2p1);
+                    frag2.push_back(p2p2);
+                    
+                    frag3.push_back(result);
+
+                glm:vec3 colorran = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
+                    
+                    Fragment* fragment1 = new Fragment(view->getVertexArrayID(), colorran,GL_LINES,GEO_INTERSECTION,frag1);
+                    fragment1->calculateBoundingBox();
+                    view->addGeometry(fragment1);
+                    
+                    Fragment* fragment2 = new Fragment(view->getVertexArrayID(), colorran,GL_LINE_LOOP,GEO_INTERSECTION,frag2);
+                        fragment2->calculateBoundingBox();
+                        view->addGeometry(fragment2);
+                    
+                    Fragment* fragment3 = new Fragment(view->getVertexArrayID(), glm::vec3(1.0,0.0,0.0),GL_POINTS,GEO_INTERSECTION,frag3);
+                      fragment3->calculateBoundingBox();
+                    view->addGeometry(fragment3);
+                    
+                }
+            }
+        }
+        
     }
     
     
@@ -285,7 +369,7 @@ bool  Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm:
 
         //compute second intersection point
         glm::vec3 vecintersectionpoint2 = glm::vec3(poly2p2-poly2p1);
-        glm::vec3 vecintersectionpoint2bylambda = glm::vec3(vecintersectionpoint2.x*lambda[0], vecintersectionpoint2.y*lambda[0], vecintersectionpoint2.z*lambda[0]);
+        glm::vec3 vecintersectionpoint2bylambda = glm::vec3(vecintersectionpoint2.x*lambda[1], vecintersectionpoint2.y*lambda[1], vecintersectionpoint2.z*lambda[1]);
         glm::vec3 intersectionpoint2 = poly2p1 + vecintersectionpoint2bylambda;
         
         //std::cout << "Intersection point 2: "<< intersectionpoint2.x << ", " << intersectionpoint2.y << ", " << intersectionpoint2.z << std::endl;
@@ -296,25 +380,9 @@ bool  Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm:
         if (glm::dot(intersectionpoint1,intersectionpoint2)>0) {
         
             intersectionpoint = glm::normalize(intersectionpoint1);
-           // std::cout << "normalised Intersection point : "<< intersectionpoint.x << ", " << intersectionpoint.y << ", " << intersectionpoint.z << std::endl;
+            std::cout << "normalised Intersection point : "<< intersectionpoint.x << ", " << intersectionpoint.y << ", " << intersectionpoint.z << std::endl;
 
-            //create two geometries to see the lines
-            /*std::vector<glm::vec3> frag1;
-            std::vector<glm::vec3> frag2;
-            frag1.push_back(poly1p1);
-            frag1.push_back(poly1p2);
-            frag1.push_back(glm::vec3(0,0,0));
-            
-            frag2.push_back(poly2p1);
-            frag2.push_back(poly2p2);
-            frag2.push_back(glm::vec3(0,0,0));
-            
-            Fragment* fragment1 = new Fragment(view->getVertexArrayID(), glm::vec3(0.0,1.0,0.0),GL_LINE_LOOP,GEO_INTERSECTION,frag1);
-            Fragment* fragment2 = new Fragment(view->getVertexArrayID(), glm::vec3(0.0,0.0,1.0),GL_LINE_LOOP,GEO_INTERSECTION,frag2);
-            fragment1->calculateBoundingBox();
-            view->addGeometry(fragment1);
-            fragment2->calculateBoundingBox();
-            view->addGeometry(fragment2);*/
+          
 
             return true;
         } else
@@ -323,6 +391,7 @@ bool  Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm:
 
     return false;
 }
+
 
 bool  Fragmenter::checkRightTurn(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2)
 {
