@@ -13,7 +13,7 @@
 %  to *include* a full epsilon ball around its end point. I already
 %  adjusted computeIntersection accordingly.
 %
-function [ result, intersected, success ] = spherePolyIntersect(poly1, poly2)
+function [ result, intersected, success, intersectionPoints ] = spherePolyIntersect(poly1, poly2)
 
 polys = {poly1, poly2};
 if 0
@@ -32,6 +32,9 @@ result(:,end+1) = polys{curPoly}(:,idx);
 idxSucc = 1+mod(idx, size(polys{curPoly},2));  % index of end point of current edge on current polygon
 
 intersected = false;
+if nargout >= 4
+    intersectionPoints = zeros(3,0);
+end
 
 for steps=1:1000
     intersects = false;
@@ -58,6 +61,9 @@ for steps=1:1000
         end
     else
         intersected = true;
+        if nargout >= 4
+            intersectionPoints(:,end+1) = intersection;
+        end
         if dot(result(:,end), cross(polys{3-curPoly}(:,jdx), polys{3-curPoly}(:,jdxSucc))) > 0
             % we are approaching from outside the cut polygon ->
             % discard what has been collected so far and start
@@ -90,8 +96,10 @@ for steps=1:1000
         break;
     end
 end
-
-success = intersected && ~isempty(result);
+if ~intersected
+    result = zeros(3,0);
+end
+success = ~isempty(result);
 
 
 function b = epsilonSame(u, v, multiplier)

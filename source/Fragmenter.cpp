@@ -349,12 +349,12 @@ bool  Fragmenter::tests()
 }
 
 bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
-                        const std::vector<glm::vec3> &fracture,
-                        std::vector<glm::vec3> &result1,
-                        std::vector<glm::vec3> &result2)
+                         const std::vector<glm::vec3> &fracture,
+                         std::vector<glm::vec3> &result1,
+                         std::vector<glm::vec3> &result2)
 {
     std::cout << "FRAGMENT: " << str(fragment) << std::endl;
-    std::cout << "FRAGMENT: " << str(fracture) << std::endl;
+    std::cout << "FRACTURE: " << str(fracture) << std::endl;
     
     double  originalArea = spherePolyArea(fragment);
     std::cout << "originalArea " << originalArea << std::endl;

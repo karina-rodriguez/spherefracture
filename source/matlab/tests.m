@@ -1,10 +1,46 @@
 function tests
 
+close all;
 %fractaltest;
 
-pool = { spherePolyRandomFracture() };
+%pool = { spherePolyRandomFracture() };
+pool = { [ 1, 0, -1, 0; 0, 1, 0, -1; 0, 0, 0, 0 ] };
+pool{1} = pool{1} + 0.01*(2*rand(size(pool{1}))-1);
+
 pool{end+1} = fliplr(pool{1});
 plotPool(pool);
+
+if 1
+    %fracture = spherePolyRandomFracture();
+    fracture = pool{1}([2,3,1],:);
+    
+    if 1
+        [Q,R] = qr(rand(3));
+        fracture = Q * fracture;
+    end
+    
+    hold on;
+    spherePolyPlot(fracture);
+    
+    pool2 = {};
+    for i=1:1
+        [ result1, ~, success, intersectionPoints ] = spherePolyIntersect(pool{i}, fracture);
+        if success
+            hold on;
+            plot3(intersectionPoints(1,:),intersectionPoints(2,:),intersectionPoints(3,:),'*m');
+            keyboard;
+            pool2{end+1} = result1;
+            [ result2, ~, success, intersectionPoints ] = spherePolyIntersect(pool{i}, fracture(:,end:-1:1));
+            if success
+                pool2{end+1} = result2;
+            end
+        end
+    end
+    
+    plotPool(pool2);
+    keyboard;
+    return;
+end
 
 while numel(pool) < 10
     fprintf(1, 'fragment count: %d\n', numel(pool));
