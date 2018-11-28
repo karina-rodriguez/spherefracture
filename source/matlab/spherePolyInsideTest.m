@@ -1,37 +1,3 @@
-function fractaltest(useExistingFigure)
-
-% Debug infrastructure
-%
-if nargin < 1
-    close all;
-    m = 3;
-    n = 4;
-    figure;
-    for i=1:m*n
-        subplot(m, n, i);
-        fractaltest(true);
-    end
-    return;
-else
-    if ~useExistingFigure
-        figure;
-    end
-end
-
-poly = spherePolyRandomFracture([], 1);
-
-if 0
-    % test spherePolyInsideTest()
-    %
-    rpts = 2.*rand(3,1000)-1;
-    rpts = normalize(rpts(:,dot(rpts,rpts) < 1));
-    hold on;
-    b = spherePolyInsideTest(poly, rpts);
-    plot3(rpts(1,b), rpts(2,b), rpts(3,b), '.g');
-    plot3(rpts(1,~b), rpts(2,~b), rpts(3,~b), '.r');
-    hold off;
-end
-
 % Known bug: works in principle, HOWEVER, points near the polygon
 % receive (signed) winding number 0 and hence tend to be
 % misclassified as outside in 50% of the cases. Leaving it as is 

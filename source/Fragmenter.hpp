@@ -12,12 +12,12 @@ private:
     int numparts;
     int actualparts;
     int actuallevel;
-    
-    glm::vec3 color;
-    float densityline;
-    float densitysphere;
-    float maxpeak;
     View* view;
+
+    glm::vec3 color;
+    double densityline;
+    double densitysphere;
+    double maxpeak;
     
     static const double  epsilon;
     static bool  epsilonSame(const glm::vec3 &a, const glm::vec3 &b, double epsilonScale=1.0);
@@ -25,12 +25,16 @@ private:
     //set the fragment and its level
     std::vector<Fragment*> fragments;
 public:
-    Fragmenter(int numparts, glm::vec3 color, float radius, float densityline, float densitysphere, float maxpeak, View* view);
+
+    Fragmenter(int numparts, glm::vec3 color, double radius, double densityline, double densitysphere, double maxpeak, View* view);
+    Fragmenter();
     ~Fragmenter();
     int fragment();
+    int testIntersections(JaggedLine* jline);
     int testFragment(JaggedLine* jline);
     bool generateTwoFragments(Fragment* fragment, JaggedLine* jline);
     void listAllFragments();
+        
     
     static bool  computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2,glm::vec3& intersectionpoint);
     static bool  checkRightTurn(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2);
