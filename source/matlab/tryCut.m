@@ -4,6 +4,7 @@ originalArea = spherePolyArea(fragment);
 fprintf(1, 'originalArea: %g\n', originalArea);
 
 [ result1, ~, success ] = spherePolyIntersect(fragment, fracture);
+result2 = zeros(3,0);
 if success
     [ result2, ~, success ] = spherePolyIntersect(fragment, fracture(:,end:-1:1));
     if success

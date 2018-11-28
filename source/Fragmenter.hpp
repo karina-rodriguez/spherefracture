@@ -32,7 +32,6 @@ public:
     int fragment();
     int testIntersections(JaggedLine* jline);
     int testFragment(JaggedLine* jline);
-    bool generateTwoFragments(Fragment* fragment, JaggedLine* jline);
     void listAllFragments();
         
     

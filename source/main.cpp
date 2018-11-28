@@ -118,7 +118,7 @@ int main(int argc, char *argv[] ){
     jline->setNumSteps(steps);
     //************ TEST the partition of the first fragment, to be replaced by: fragment()
     fragmenter->testIntersections(jline);
- //   myview->addGeometry(jline);
+    myview->addGeometry(jline);
    // }*/
 
   //  fragmenter->fragment();

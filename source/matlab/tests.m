@@ -28,7 +28,7 @@ if 1
         if success
             hold on;
             plot3(intersectionPoints(1,:),intersectionPoints(2,:),intersectionPoints(3,:),'*m');
-            keyboard;
+            %keyboard;
             pool2{end+1} = result1;
             [ result2, ~, success, intersectionPoints ] = spherePolyIntersect(pool{i}, fracture(:,end:-1:1));
             if success
