@@ -107,7 +107,7 @@ int Fragmenter::testIntersections(JaggedLine* jline){
                 std::cout << "Vertex next p2: " << poly2p2.x << " " << poly2p2.y << " " << poly2p2.z << std::endl;
                 
                  //generate geometry to see the planes
-                 std::vector<glm::vec3> tfrag1;
+                /* std::vector<glm::vec3> tfrag1;
                  std::vector<glm::vec3> tfrag2;
                  tfrag1.push_back(poly1p1);
                  tfrag1.push_back(poly1p2);
@@ -122,7 +122,7 @@ int Fragmenter::testIntersections(JaggedLine* jline){
                  tfragment1->calculateBoundingBox();
                  view->addGeometry(tfragment1);
                  tfragment2->calculateBoundingBox();
-                 view->addGeometry(tfragment2);
+                 view->addGeometry(tfragment2);*/
             
                 
                 //calculate next point before check, so that if it intersects it does not do anything anymore ...
