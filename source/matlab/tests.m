@@ -3,14 +3,14 @@ function tests
 close all;
 %fractaltest;
 
-%pool = { spherePolyRandomFracture() };
-pool = { [ 1, 0, -1, 0; 0, 1, 0, -1; 0, 0, 0, 0 ] };
+pool = { spherePolyRandomFracture() };
+%pool = { [ 1, 0, -1, 0; 0, 1, 0, -1; 0, 0, 0, 0 ] };
 pool{1} = pool{1} + 0.01*(2*rand(size(pool{1}))-1);
 
 pool{end+1} = fliplr(pool{1});
 plotPool(pool);
 
-if 1
+if 0
     %fracture = spherePolyRandomFracture();
     fracture = pool{1}([2,3,1],:);
     
@@ -50,9 +50,10 @@ while numel(pool) < 10
     if success
         pool{idx} = result1;
         pool{end+1} = result2;
-        plotPool(pool);
+        %plotPool(pool);
     end
 end
+plotPool(pool);
 
 function plotPool(pool)
 colChars = 'rgbcmyk';
