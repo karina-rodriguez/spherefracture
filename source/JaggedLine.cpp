@@ -1,6 +1,45 @@
 #include "JaggedLine.hpp"
 
-JaggedLine::JaggedLine(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, float density,float maxpeak,bool anticlockwise): Geometry(vertexarrayIDT,colour, primitive, type), density(density), maxpeak(maxpeak) {
+void  JaggedLine::initFromVertices(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type)
+{
+    for (int i=0;i<vertices.size();i++)
+        colors.push_back(colour);
+    
+    for (int i=0;i<vertices.size();i++) {
+        //        normals.push_back(glm::vec3(0.0, 0.0, 10.0));
+        normals.push_back(vertices[i]-glm::vec3(0,0,0));
+    }
+    
+    storePointSet(vertices);
+    
+    glGenBuffers(1, &vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+    vertices_size =vertices.size();
+    
+    std::cout << "**********$$$$$$$$$$$$$$$$" << vertices.size() << std::endl;
+
+    
+    glGenBuffers(1, &colorbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec3), &colors[0], GL_STATIC_DRAW);
+    
+    glGenBuffers(1, &normalbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+}
+
+
+JaggedLine::JaggedLine(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, const std::vector<glm::vec3> &poly)
+    : Geometry(vertexarrayIDT,colour, primitive, type), density(density), maxpeak(maxpeak)
+{
+    vertices = poly;
+    initFromVertices(vertexarrayIDT, colour, primitive, type);
+}
+
+JaggedLine::JaggedLine(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, float density,float maxpeak,bool anticlockwise)
+    : Geometry(vertexarrayIDT,colour, primitive, type), density(density), maxpeak(maxpeak)
+{
 //    const double PI = 3.141592653589793238462643383279502884197;
     //generate a random rotation by giving a random vector
     float radius = 1;
@@ -43,40 +82,14 @@ JaggedLine::JaggedLine(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive
         vertices.push_back(glm::vec3(newp.x,newp.y,newp.z));
 //  vertices.push_back(glm::vec3(p.x,p.y,p.z));
     }
-    
-    for (int i=0;i<vertices.size();i++){
-        colors.push_back(colour);
-    }
-    for (int i=0;i<vertices.size();i++){
-        //        normals.push_back(glm::vec3(0.0, 0.0, 10.0));
-        normals.push_back(vertices[i]-glm::vec3(0,0,0));
-        
-    }
-    
-    
-    storePointSet(vertices);
-    
-    glGenBuffers(1, &vertexbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
-    vertices_size =vertices.size();
-    
-    std::cout << "**********$$$$$$$$$$$$$$$$" << vertices.size() << std::endl;
 
-    
-    glGenBuffers(1, &colorbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec3), &colors[0], GL_STATIC_DRAW);
-    
-    glGenBuffers(1, &normalbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
-    
+    initFromVertices(vertexarrayIDT, colour, primitive, type);
 }
-JaggedLine::~JaggedLine() {
-}
+
 //testing jagged line
-JaggedLine::JaggedLine(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, float density,float maxpeak,bool anticlockwise, glm::vec3 rot): Geometry(vertexarrayIDT,colour, primitive, type), density(density), maxpeak(maxpeak) {
+JaggedLine::JaggedLine(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, float density,float maxpeak,bool anticlockwise, glm::vec3 rot)
+    : Geometry(vertexarrayIDT,colour, primitive, type), density(density), maxpeak(maxpeak)
+{
     //    const double PI = 3.141592653589793238462643383279502884197;
     //generate a random rotation by giving a random vector
     float radius = 1;
@@ -121,33 +134,9 @@ JaggedLine::JaggedLine(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive
        // if (num==5) break;
      //   num++;
     }
-    
-    for (int i=0;i<vertices.size();i++){
-        colors.push_back(colour);
-    }
-    for (int i=0;i<vertices.size();i++){
-        //        normals.push_back(glm::vec3(0.0, 0.0, 10.0));
-        normals.push_back(vertices[i]-glm::vec3(0,0,0));
-        
-    }
-    
-    
-    storePointSet(vertices);
-    
-    glGenBuffers(1, &vertexbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
-    vertices_size =vertices.size();
-    
-    std::cout << "**********$$$$$$$$$$$$$$$$" << vertices.size() << std::endl;
-    
-    
-    glGenBuffers(1, &colorbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec3), &colors[0], GL_STATIC_DRAW);
-    
-    glGenBuffers(1, &normalbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
-    
+
+    initFromVertices(vertexarrayIDT, colour, primitive, type);
+}
+
+JaggedLine::~JaggedLine() {
 }

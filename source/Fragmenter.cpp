@@ -15,6 +15,8 @@ Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
 };
 
 //////////////////////////////////////////////////////////////////////////////
+// Helpers
+//
 
 template<typename T>
 std::string  str(const T &val);
@@ -39,12 +41,38 @@ std::string  str(const std::vector<V> &v) {
     return s;
 }
 
+// ============================================================================
+
+inline double  randSigned() { return 2.0*rand()/RAND_MAX-1.0; }
+
+inline glm::dvec3  randDirection3()
+{
+    glm::dvec3  dir;
+    double  len;
+    do {
+         dir = glm::dvec3(randSigned(), randSigned(), randSigned());
+         len = glm::length(dir);
+    } while (len > 1);
+    return (1.0/len) * dir;
+}
+
+inline glm::dmat3  randRotationMatrix3()
+{
+    auto  u = randDirection3();
+    auto  v = glm::normalize(glm::cross(randDirection3(), u));
+    auto  w = glm::cross(u, v);
+    return glm::dmat3(u,v,w);
+}
+
 //////////////////////////////////////////////////////////////////////////////
-        
+// Class members
+//
+
 Fragmenter::Fragmenter(int numparts, glm::vec3 color, float radius, float densityline, float densitysphere, float maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view){
     actualparts = 0;
     actuallevel = 0;
-    JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,GEO_PATH, densityline,maxpeak, true);
+    //auto  jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,GEO_PATH, densityline,maxpeak, true);
+    auto  jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,GEO_PATH, spherePolyRandomFracture());
     
     //seed two initial parts to fragment
     Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::vec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,jline->getVertices());
@@ -70,7 +98,8 @@ int Fragmenter::fragment(){
    
 
     for (int i=0;i<10;i++){
-        JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
+        //auto  jline = new JaggedLine(view->getVertexArrayID(),glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
+        auto  jline = new JaggedLine(view->getVertexArrayID(),glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,spherePolyRandomFracture());
         jline->calculateBoundingBox();
         // jline->exportPoints();
         std::vector<glm::vec3> result;
@@ -362,8 +391,8 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
                          std::vector<glm::vec3> &result1,
                          std::vector<glm::vec3> &result2)
 {
-    std::cout << "FRAGMENT: " << str(fragment) << std::endl;
-    std::cout << "FRACTURE: " << str(fracture) << std::endl;
+    //std::cout << "FRAGMENT: " << str(fragment) << std::endl;
+    //std::cout << "FRACTURE: " << str(fracture) << std::endl;
     
     double  originalArea = spherePolyArea(fragment);
     std::cout << "originalArea " << originalArea << std::endl;
@@ -385,7 +414,7 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
 
 //            std::cout << "result: " << (relAreaErr < 0.001 &&  std::max(area1 / area2, area2 / area1) < 4.0) << std::endl;
             return
-                relAreaErr < 0.001 &&                                       // single pieces, please
+                relAreaErr < 1e-5 &&                                       // single pieces, please
                              std::max(area1 / area2, area2 / area1) < 4.0;  // maximum area ratio
         }
     }
@@ -395,45 +424,52 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
 // spherePolyRandomFracture produces spherical polygon of m * 2^niter points.
 std::vector<glm::vec3>  Fragmenter::spherePolyRandomFracture(const RandomFractureOptions &opt)
 {
-#if 0
-A = rand(3);
-A(:,2) = cross(A(:,3), A(:,1));
-A(:,3) = cross(A(:,1), A(:,2));
-A = normalize(A);  % column-wise normalisation
-%A'*A    % test
+    auto  A = randRotationMatrix3();
 
-std::vector<glm::vec3>  poly;
-{
-    poly.reserve(opt.m);
-    const double  f = 2.0 * M_PI / opt.m;
-    for (int i=0; i<opt.m; ++i) {
-        glm::vec3  v((float)(f*i + f*opt.jitter * (2*((double)rand() / RAND_MAX) - 1)),
-                     (float)(f*opt.amplitude * (2*((double)rand() / RAND_MAX) - 1)),
-                     0.f);
-        poly.push_back(A * glm::vec3(cos(v.x)*cos(v.y), sin(v.x)*cos(v.y), sin(v.y)));
+    std::vector<glm::vec3>  poly;
+    {
+        poly.reserve(opt.m);
+        const double  f = 2.0 * M_PI / opt.m;
+        for (int i=0; i<opt.m; ++i) {
+            glm::vec3  v((float)(f*i + f*opt.jitter * randSigned()),
+                         (float)(f*opt.amplitude * randSigned()),
+                         0.f);
+            poly.push_back(A * glm::vec3(cos(v.x)*cos(v.y), sin(v.x)*cos(v.y), sin(v.y)));
+        }
     }
-}
 
-for iter=1:opt.niter
-    polyNext = poly(:,[2:end,1]);
-    d = polyNext - poly;
+    {
+        double  jitter = opt.jitter;
+        double  amplitude = opt.amplitude;
+        for (int iter=0; iter<opt.niter; ++iter) {
+            std::vector<glm::vec3>  newPoly;
+            newPoly.reserve(2 * poly.size());
+            for (int idx=0; idx<(int)poly.size(); ++idx) {
+                int  idxSucc = (idx + 1) % ((int)poly.size());
+
+                auto  w = glm::normalize(glm::cross(poly[idx], poly[idxSucc]));
+                auto  u = poly[idx];
+                auto  v = glm::cross(w, u);
     
-    w = normalize(cross(poly, polyNext));
-    u = poly;
-    v = cross(w, u);
+                double  arclen = acos(glm::dot(poly[idxSucc], u));
+                double  midarclen = arclen * (0.5+jitter * randSigned());
+                double  midampl = arclen * opt.amplitude * randSigned();
+                auto  midpoint =
+                    u * float(cos(midarclen) * cos(midampl))
+                    + v * float(sin(midarclen) * cos(midampl))
+                    + w * float(sin(midampl));
+
+                newPoly.push_back(poly[idx]);
+                newPoly.push_back(midpoint);
+            }
+            poly.swap(newPoly);
+        
+            jitter *= opt.decay;
+            amplitude *= opt.decay;
+        }
+    }
     
-    arclen = acos(dot(polyNext, u));
-    midarclen = arclen .* (0.5+opt.jitter.*(2*rand(size(arclen))-1));
-    midampl = arclen .* opt.amplitude .* (2*rand(size(arclen))-1);
-    midpoint = u .* (cos(midarclen).*cos(midampl)) + v .* (sin(midarclen).*cos(midampl)) + w .* sin(midampl);
-    
-    poly = reshape(cat(1, poly, midpoint), 3, []);  % interleave poly and midpoint vector arrays
-    
-    opt.jitter = opt.decay * opt.jitter;
-    opt.amplitude = opt.decay * opt.amplitude;
-end
-#endif
-    return {};
+    return poly;
 }
 
 bool  Fragmenter::epsilonSame(const glm::vec3 &a, const glm::vec3 &b, double epsilonScale)
