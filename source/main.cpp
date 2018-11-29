@@ -114,7 +114,7 @@ int main(int argc, char *argv[] ){
     jline->calculateBoundingBox();
     // jline->exportPoints();
     jline->setNumSteps(steps);
-    //************ TEST the partition of the first fragment, to be replaced by: fragment()
+    // ************ TEST the partition of the first fragment, to be replaced by: fragment()
     fragmenter->testFragment(jline);
  //   myview->addGeometry(jline);
     }*/

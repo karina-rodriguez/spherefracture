@@ -6,6 +6,16 @@
 
 const double  Fragmenter::epsilon = 1e-6;
 
+Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
+#if 0
+    3, 0.28, 0.28/3.0, 0.9, 5
+#else
+    4, 0.4, 0.4/2.5, 0.9, 4
+#endif
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
 template<typename T>
 std::string  str(const T &val);
 
@@ -29,6 +39,8 @@ std::string  str(const std::vector<V> &v) {
     return s;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+        
 Fragmenter::Fragmenter(int numparts, glm::vec3 color, float radius, float densityline, float densitysphere, float maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view){
     actualparts = 0;
     actuallevel = 0;
@@ -378,6 +390,50 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
         }
     }
     return false;
+}
+
+// spherePolyRandomFracture produces spherical polygon of m * 2^niter points.
+std::vector<glm::vec3>  Fragmenter::spherePolyRandomFracture(const RandomFractureOptions &opt)
+{
+#if 0
+A = rand(3);
+A(:,2) = cross(A(:,3), A(:,1));
+A(:,3) = cross(A(:,1), A(:,2));
+A = normalize(A);  % column-wise normalisation
+%A'*A    % test
+
+std::vector<glm::vec3>  poly;
+{
+    poly.reserve(opt.m);
+    const double  f = 2.0 * M_PI / opt.m;
+    for (int i=0; i<opt.m; ++i) {
+        glm::vec3  v((float)(f*i + f*opt.jitter * (2*((double)rand() / RAND_MAX) - 1)),
+                     (float)(f*opt.amplitude * (2*((double)rand() / RAND_MAX) - 1)),
+                     0.f);
+        poly.push_back(A * glm::vec3(cos(v.x)*cos(v.y), sin(v.x)*cos(v.y), sin(v.y)));
+    }
+}
+
+for iter=1:opt.niter
+    polyNext = poly(:,[2:end,1]);
+    d = polyNext - poly;
+    
+    w = normalize(cross(poly, polyNext));
+    u = poly;
+    v = cross(w, u);
+    
+    arclen = acos(dot(polyNext, u));
+    midarclen = arclen .* (0.5+opt.jitter.*(2*rand(size(arclen))-1));
+    midampl = arclen .* opt.amplitude .* (2*rand(size(arclen))-1);
+    midpoint = u .* (cos(midarclen).*cos(midampl)) + v .* (sin(midarclen).*cos(midampl)) + w .* sin(midampl);
+    
+    poly = reshape(cat(1, poly, midpoint), 3, []);  % interleave poly and midpoint vector arrays
+    
+    opt.jitter = opt.decay * opt.jitter;
+    opt.amplitude = opt.decay * opt.amplitude;
+end
+#endif
+    return {};
 }
 
 bool  Fragmenter::epsilonSame(const glm::vec3 &a, const glm::vec3 &b, double epsilonScale)

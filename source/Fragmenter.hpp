@@ -6,6 +6,17 @@
 #include "JaggedLine.hpp"
 
 class Fragmenter {
+
+public:
+    struct RandomFractureOptions {
+        int    m;           // initial vertex count; must be m>=3
+        float  jitter;      // relative jitter of midpoint along curve
+        float  amplitude;   // relative amplitude
+        float  decay;       // relative amplitude/jitter decay per iteration
+        float  niter;       // number of fractal iterations
+    };
+
+    static RandomFractureOptions  defaultRandomFractureOptions;
     
 private:
     int radius;
@@ -40,6 +51,7 @@ public:
                  const std::vector<glm::vec3> &fracture,
                  std::vector<glm::vec3> &result1,
                  std::vector<glm::vec3> &result2);
+    static std::vector<glm::vec3>  spherePolyRandomFracture(const RandomFractureOptions &opt=defaultRandomFractureOptions);
     static bool  spherePolyIntersect(const std::vector<glm::vec3> &poly1,
                                      const std::vector<glm::vec3> &poly2,
                                      std::vector<glm::vec3> &result);
