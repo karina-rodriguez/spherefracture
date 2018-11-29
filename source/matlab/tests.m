@@ -10,7 +10,7 @@ pool{1} = pool{1} + 0.01*(2*rand(size(pool{1}))-1);
 pool{end+1} = fliplr(pool{1});
 plotPool(pool);
 
-if 0
+if 1
     %fracture = spherePolyRandomFracture();
     fracture = pool{1}([2,3,1],:);
     
@@ -60,7 +60,7 @@ colChars = 'rgbcmyk';
 
 figure;
 if 1
-    phidense = linspace(0,2*pi,1000);
+    phidense = linspace(0,2*pi,10000);
     A = eye(3);
     circ1 = A * cat(1, cos(phidense), sin(phidense), zeros(size(phidense)));
     circ2 = A * cat(1, zeros(size(phidense)), cos(phidense), sin(phidense));

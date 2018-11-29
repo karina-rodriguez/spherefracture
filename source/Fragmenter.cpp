@@ -6,7 +6,7 @@
 const double  Fragmenter::epsilon = 1e-6;
 
 Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
-#if 1
+#if 0
     3, 7, 0.28, 0.28/3.0, 0.9
 #else
     4, 6, 0.4, 0.4/2.5, 0.9
@@ -553,6 +553,29 @@ double  Fragmenter::spherePolyAngle(const std::vector<glm::vec3> &poly, int idx)
     glm::vec3  tp = glm::cross(np, pc);
 
     return fmod(atan2(glm::dot(nn, tp), glm::dot(nn, np)) + M_PI, 2.0*M_PI);
+}
+
+// UNTESTED port from Matlab...
+// KNOWN BUG (as observed in Matlab): works in principle, HOWEVER,
+// for particularly jaggy polygons, points near the polygon receive
+// (signed) winding number 0 and hence tend to be misclassified as
+// outside in 50% of the cases. Leaving it as is for now, seeing that
+// in our applications false negatives are tolerable.
+//
+bool  spherePolyInsideTest(const std::vector<glm::vec3> &poly, const glm::vec3 &point)
+{
+    auto  pl = poly;                   // will be modified
+    auto  pt = glm::normalize(point);  // paranoia
+    
+    for (int i=0; i<(int)pl.size(); ++i)
+        pl[i] = glm::normalize(pl[i] - dot(pt, pl[i]) * pt);  // project into plane orthogonal to pt, then normalise
+    
+    double  sum = 0.0;
+    for (int i=0; i<(int)pl.size(); ++i) {
+        int  iSucc = (i+1) % (int)pl.size();
+        sum += atan2(glm::dot(pt, glm::cross(pl[i], pl[iSucc])), glm::dot(pl[i], pl[iSucc]));
+    }
+    return floor(0.5 + sum / (2*M_PI)) > 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////

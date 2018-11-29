@@ -59,5 +59,7 @@ public:
     static double  spherePolyArea(const std::vector<glm::vec3> &poly);
     static double  spherePolyAngle(const std::vector<glm::vec3> &poly, int idx);
 
+    static bool  spherePolyInsideTest(const std::vector<glm::vec3> &poly, const glm::vec3 &point);
+
     static bool  tests();
 };

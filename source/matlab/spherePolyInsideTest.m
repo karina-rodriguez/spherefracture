@@ -14,7 +14,7 @@ else
     point = normalize(point);  % paranoia
     poly = poly - point.*sum(point.*poly, 1);   % project into plane orthogonal to point
     poly = normalize(poly);
-    c = dot(poly(:, [1:end,1]), poly(:, [2:end,1,2]));
-    s = dot(repmat(point, 1, 1+size(poly,2)), cross(poly(:, [1:end,1]), poly(:, [2:end,1,2])));
+    c = dot(poly, poly(:, [2:end,1]));
+    s = dot(repmat(point, 1, size(poly,2)), cross(poly, poly(:, [2:end,1])));
     b = floor(0.5 + sum(atan2(s, c))./(2*pi)) > 0;
 end
