@@ -91,8 +91,6 @@ add_executable(breakSphere
 	source/Geometry.hpp
 	source/Fragment.cpp
 	source/Fragment.hpp
-	source/JaggedLine.cpp
-	source/JaggedLine.hpp
 	source/Fragmenter.cpp
 	source/Fragmenter.hpp
 	source/SimpleFragmentShader.hlsl
