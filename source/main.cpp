@@ -111,7 +111,7 @@ int main(int argc, char *argv[] ){
     Fragmenter* fragmenter = new Fragmenter(numparts,glm::vec3(1,0,0),radius,densityline,densitysphere,maxpeak,myview);
     //this is a test fragment to check how it is working
   //  for (int i=0;i<10;i++){
-    JaggedLine* jline = new JaggedLine(vertexarrayID,glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
+   /* JaggedLine* jline = new JaggedLine(vertexarrayID,glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
     jline->setNumSteps(steps);
     jline->calculateBoundingBox();
     // jline->exportPoints();
@@ -119,9 +119,9 @@ int main(int argc, char *argv[] ){
     //************ TEST the partition of the first fragment, to be replaced by: fragment()
     fragmenter->testIntersections(jline);
     myview->addGeometry(jline);
-   // }*/
+    }*/
 
-  //  fragmenter->fragment();
+    fragmenter->fragment();
 
 
     

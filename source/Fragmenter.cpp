@@ -31,24 +31,22 @@ std::string  str(const std::vector<V> &v) {
 
 Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double densityline, double densitysphere, double maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view){
     actualparts = 0;
-    actuallevel = 0;
     JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,GEO_PATH, densityline,maxpeak, true);
     
     //seed two initial parts to fragment
     Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::vec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,jline->getVertices());
     fragment0->calculateBoundingBox();
-    fragment0->setLevel(0);
     view->addGeometry(fragment0);
-    fragments.push_back(fragment0);
+    fragments.push(fragment0);
     actualparts++;
     
     Fragment* fragment1 = new Fragment(view->getVertexArrayID(), glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX),GL_LINE_LOOP,GEO_FRAGMENT,jline->getVerticesReversed());
     fragment1->calculateBoundingBox();
-    fragment1->setLevel(0);
 //    view->addGeometry(fragment1);
-    fragments.push_back(fragment1);
+    fragments.push(fragment1);
     actualparts++;
     
+   
 }
 Fragmenter::Fragmenter(){
     
@@ -57,6 +55,47 @@ Fragmenter::~Fragmenter() {
 }
 
 int Fragmenter::fragment(){
+
+    //while (actualparts<numparts){
+    while(actualparts<numparts){
+   
+        std::vector<glm::vec3> result1,result2;
+        JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
+        
+        Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::vec3(1,0,0),GL_LINE_LOOP,GEO_FRAGMENT,jline->getVertices());
+        fragment0->calculateBoundingBox();
+       // view->addGeometry(fragment0);
+        
+        //try this cut and if it works display it
+        if( tryCut(fragments.front()->getVertices(), jline->getVertices(), result1,result2)){
+            //remove the last fragment on the queue as we have now deal with this
+            fragments.pop();
+
+            //display the fragments on screen
+            glm::vec3 colorran = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
+
+          /*  Fragment* fragment1 = new Fragment(view->getVertexArrayID(), colorran,GL_LINE_LOOP,GEO_PATH,result1);
+            fragment1->calculateBoundingBox();
+            view->addGeometry(fragment1);
+            
+            Fragment* fragment2 = new Fragment(view->getVertexArrayID(), colorran,GL_LINE_LOOP,GEO_PATH,result2);
+            fragment2->calculateBoundingBox();
+            view->addGeometry(fragment2);
+         */
+
+            //create the two new fragments
+            Fragment* newfrag1 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result1);
+            fragments.push(newfrag1);
+
+            Fragment* newfrag2 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result2);
+            fragments.push(newfrag2);
+            actualparts+=1;
+            std::cout << "actual parts: " << actualparts << std::endl;
+        }
+        
+    }
+    
+     listAllFragments();
     return 1;
 }
 
@@ -313,13 +352,17 @@ int Fragmenter::testFragment(JaggedLine* jline)
 }
 
 void Fragmenter::listAllFragments(){
-    std::cout << "**********Fragments: " << fragments.size() << std::endl;
-    for (std::vector<Fragment*>::iterator it = fragments.begin() ; it != fragments.end(); ++it){
-        Fragment* frag = *it;
-        std::cout << "Vertices " << frag->getVertices().size() << " " << frag->getLevel() << std::endl;
+    std::queue<Fragment*> tmpqueue = fragments;
+    while (!tmpqueue.empty())
+    {
+        view->addGeometry(tmpqueue.front());
+        
+        std::cout << tmpqueue.front() << std::endl;
+        tmpqueue.pop();
         
     }
 
+    
 }
 
 bool  Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2, glm::vec3& intersectionpoint)

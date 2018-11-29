@@ -15,7 +15,7 @@ class JaggedLine : public Geometry {
     
 public:
    
-    JaggedLine(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, float density, float maxpeak, bool anticlockwise);
+    JaggedLine(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, double density, double maxpeak, bool anticlockwise);
     ~JaggedLine();
-    JaggedLine(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, float density,float maxpeak,bool anticlockwise, glm::vec3 rot);
+    JaggedLine(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, double density,double maxpeak,bool anticlockwise, glm::vec3 rot);
 };

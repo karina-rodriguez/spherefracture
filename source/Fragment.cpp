@@ -38,9 +38,3 @@ Fragment::Fragment(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, ge
 
 Fragment::~Fragment() {
 }
-void Fragment::setLevel(int levelt){
-    level = levelt;
-}
-int Fragment::getLevel(){
-    return level;
-}

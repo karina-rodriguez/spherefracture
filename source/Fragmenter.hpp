@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <queue>
 #include "View.hpp"
 #include "Fragment.hpp"
 
@@ -11,7 +12,6 @@ private:
     int radius;
     int numparts;
     int actualparts;
-    int actuallevel;
     View* view;
 
     glm::vec3 color;
@@ -23,7 +23,7 @@ private:
     static bool  epsilonSame(const glm::vec3 &a, const glm::vec3 &b, double epsilonScale=1.0);
     
     //set the fragment and its level
-    std::vector<Fragment*> fragments;
+    std::queue<Fragment*> fragments;
 public:
 
     Fragmenter(int numparts, glm::vec3 color, double radius, double densityline, double densitysphere, double maxpeak, View* view);
