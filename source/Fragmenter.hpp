@@ -9,10 +9,10 @@ class Fragmenter {
 public:
     struct RandomFractureOptions {
         int    m;           // initial vertex count; must be m>=3
+        float  niter;       // number of fractal iterations
         float  jitter;      // relative jitter of midpoint along curve
         float  amplitude;   // relative amplitude
         float  decay;       // relative amplitude/jitter decay per iteration
-        float  niter;       // number of fractal iterations
     };
 
     static RandomFractureOptions  defaultRandomFractureOptions;

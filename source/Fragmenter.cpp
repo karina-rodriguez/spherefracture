@@ -6,10 +6,10 @@
 const double  Fragmenter::epsilon = 1e-6;
 
 Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
-#if 0
-    3, 0.28, 0.28/3.0, 0.9, 5
+#if 1
+    3, 7, 0.28, 0.28/3.0, 0.9
 #else
-    4, 0.4, 0.4/2.5, 0.9, 4
+    4, 6, 0.4, 0.4/2.5, 0.9
 #endif
 };
 
@@ -135,7 +135,6 @@ int Fragmenter::testIntersections(std::vector<glm::vec3> jline){
     
     int curPoly = 0; // then one you’re “sitting on” while intersecting with the other
     int idx[2] = {0,0};
-    
     
     int index =0;
     int sizepoly1 = polys[0].size();
@@ -310,7 +309,7 @@ bool  Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm:
         if (glm::dot(intersectionpoint1,intersectionpoint2)>0) {
         
             intersectionpoint = glm::normalize(intersectionpoint1);
-            std::cout << "normalised Intersection point : "<< intersectionpoint.x << ", " << intersectionpoint.y << ", " << intersectionpoint.z << std::endl;
+            //std::cout << "normalised Intersection point : "<< intersectionpoint.x << ", " << intersectionpoint.y << ", " << intersectionpoint.z << std::endl;
 
           
 
