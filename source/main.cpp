@@ -23,7 +23,6 @@ using namespace glm;
 #include "View.hpp"
 #include "Geometry.hpp"
 #include "Fragment.hpp"
-#include "JaggedLine.hpp"
 #include "Fragmenter.hpp"
 
 
@@ -116,10 +115,9 @@ int main(int argc, char *argv[] ){
     jline->calculateBoundingBox();
     // jline->exportPoints();
     jline->setNumSteps(steps);
-    //************ TEST the partition of the first fragment, to be replaced by: fragment()
-    fragmenter->testIntersections(jline);
-    myview->addGeometry(jline);
-    }*/
+    // ************ TEST the partition of the first fragment, to be replaced by: fragment()
+    fragmenter->testFragment(jline);
+    myview->addGeometry(jline);*/
 
     fragmenter->fragment();
 

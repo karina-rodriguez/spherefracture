@@ -1,10 +1,21 @@
 #include "Fragmenter.hpp"
 #include "Fragment.hpp"
-#include "JaggedLine.hpp"
 
 #include <assert.h>
 
 const double  Fragmenter::epsilon = 1e-6;
+
+Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
+#if 0
+    3, 0.28, 0.28/3.0, 0.9, 5
+#else
+    4, 0.4, 0.4/2.5, 0.9, 4
+#endif
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Helpers
+//
 
 template<typename T>
 std::string  str(const T &val);
@@ -29,18 +40,48 @@ std::string  str(const std::vector<V> &v) {
     return s;
 }
 
+inline double  randSigned() { return 2.0*rand()/RAND_MAX-1.0; }
+
+inline glm::dvec3  randDirection3()
+{
+    glm::dvec3  dir;
+    double  len;
+    do {
+         dir = glm::dvec3(randSigned(), randSigned(), randSigned());
+         len = glm::length(dir);
+    } while (len > 1);
+    return (1.0/len) * dir;
+}
+
+inline glm::dmat3  randRotationMatrix3()
+{
+    auto  u = randDirection3();
+    auto  v = glm::normalize(glm::cross(randDirection3(), u));
+    auto  w = glm::cross(u, v);
+    return glm::dmat3(u,v,w);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Class members
+//
+
+
 Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double densityline, double densitysphere, double maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view){
     actualparts = 0;
-    JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,GEO_PATH, densityline,maxpeak, true);
-    
+    //auto  jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,GEO_PATH, spherePolyRandomFracture());
+    std::vector<glm::vec3> fracture = spherePolyRandomFracture();
     //seed two initial parts to fragment
-    Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::vec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,jline->getVertices());
+    Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::vec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,fracture);
     fragment0->calculateBoundingBox();
     view->addGeometry(fragment0);
     fragments.push(fragment0);
     actualparts++;
     
-    Fragment* fragment1 = new Fragment(view->getVertexArrayID(), glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX),GL_LINE_LOOP,GEO_FRAGMENT,jline->getVerticesReversed());
+    //get the vertices reversed
+    std::vector<glm::vec3> thevertices = fracture;
+    std::reverse(thevertices.begin(),thevertices.end());
+    
+    Fragment* fragment1 = new Fragment(view->getVertexArrayID(), glm::vec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,thevertices);
     fragment1->calculateBoundingBox();
 //    view->addGeometry(fragment1);
     fragments.push(fragment1);
@@ -56,32 +97,20 @@ Fragmenter::~Fragmenter() {
 
 int Fragmenter::fragment(){
 
-    //while (actualparts<numparts){
     while(actualparts<numparts){
    
         std::vector<glm::vec3> result1,result2;
-        JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
+
         
-        Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::vec3(1,0,0),GL_LINE_LOOP,GEO_FRAGMENT,jline->getVertices());
-        fragment0->calculateBoundingBox();
-       // view->addGeometry(fragment0);
+    
         
-        //try this cut and if it works display it
-        if( tryCut(fragments.front()->getVertices(), jline->getVertices(), result1,result2)){
+        //try this cut and if it works add the two parts
+        if( tryCut(fragments.front()->getVertices(), spherePolyRandomFracture(), result1,result2)){
             //remove the last fragment on the queue as we have now deal with this
             fragments.pop();
-
             //display the fragments on screen
             glm::vec3 colorran = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
 
-          /*  Fragment* fragment1 = new Fragment(view->getVertexArrayID(), colorran,GL_LINE_LOOP,GEO_PATH,result1);
-            fragment1->calculateBoundingBox();
-            view->addGeometry(fragment1);
-            
-            Fragment* fragment2 = new Fragment(view->getVertexArrayID(), colorran,GL_LINE_LOOP,GEO_PATH,result2);
-            fragment2->calculateBoundingBox();
-            view->addGeometry(fragment2);
-         */
 
             //create the two new fragments
             Fragment* newfrag1 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result1);
@@ -90,7 +119,6 @@ int Fragmenter::fragment(){
             Fragment* newfrag2 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result2);
             fragments.push(newfrag2);
             actualparts+=1;
-            std::cout << "actual parts: " << actualparts << std::endl;
         }
         
     }
@@ -99,11 +127,11 @@ int Fragmenter::fragment(){
     return 1;
 }
 
-int Fragmenter::testIntersections(JaggedLine* jline){
+int Fragmenter::testIntersections(std::vector<glm::vec3> jline){
    
     std::vector<glm::vec3> polys[2];
     polys[0] = fragments.front()->getVertices();
-    polys[1] = jline->getVertices();
+    polys[1] = jline;
     
     int curPoly = 0; // then one you’re “sitting on” while intersecting with the other
     int idx[2] = {0,0};
@@ -214,141 +242,21 @@ int Fragmenter::testIntersections(JaggedLine* jline){
     return 1;
 }
 
-int Fragmenter::testFragment(JaggedLine* jline)
+int Fragmenter::testFragment(std::vector<glm::vec3> jline)
 {
     std::vector<glm::vec3> result;
     std::vector<glm::vec3> result2;
 
    // std::cout << "TESTS " << std::endl;
-    if (1) {
-       // spherePolyIntersect(fragments.front()->getVertices(), jline->getVertices(), result);
-        
-        std::cout << tryCut(fragments.front()->getVertices(), jline->getVertices(), result,result2) << std::endl;
-
-    } else {
-        std::vector<glm::vec3> polys[2];
-        polys[0] = fragments.front()->getVertices();
-        polys[1] = jline->getVertices();
-    
-        int curPoly = 0; // then one you’re “sitting on” while intersecting with the other
-        int idx[2] = {0,0};
-    
-    
-        int index =0;
-        int sizepoly1 = polys[0].size();
-        std::vector<glm::vec3>::iterator itr0 = polys[0].begin();
-        glm::vec3 polyinitial = *itr0;
-    
-        //std::cout <<  jline->getNumSteps() << std::endl;
-        // compute intersections
-        // to be replaced for (;;) {
-        for (int i=0;i<jline->getNumSteps();i++){
-            //for (;;){
-            //std::cout << "ITERATION:  " << i <<  std::endl;
-
-            //std::cout << idx[curPoly] << std::endl;
-            //std::cout << (idx[curPoly] + 1) % polys[curPoly].size() << std::endl;
-        
-            glm::vec3 poly1p1 = polys[curPoly].at(idx[curPoly]);
-            glm::vec3 poly1p2 = polys[curPoly].at((idx[curPoly] + 1) % polys[curPoly].size());
-        
-            //std::cout << "Vertex actual p1: " << poly1p1.x << " " << poly1p1.y << " " << poly1p1.z << std::endl;
-            //std::cout << "Vertex next p1:" << poly1p2.x << " " << poly1p2.y << " " << poly1p2.z << std::endl;
-        
-            //iterate over the other polygon
-            //in notes: for (...) { } -> idx[1-curPoly] says which edge of the other polygon intersects
-            bool intersect = 0;
-            glm::vec3 intersectionpoint;
-
-            for (int n=0;n<polys[1-curPoly].size();n++){
-                if (!intersect){
-                    //std::cout << idx[1-curPoly] << std::endl;
-                    //std::cout << (idx[1-curPoly] + 1) % polys[1-curPoly].size() << std::endl;
-                
-                    glm::vec3 poly2p1 = polys[1-curPoly].at(idx[1-curPoly]);
-                    glm::vec3 poly2p2 = polys[1-curPoly].at((idx[1-curPoly] + 1) % polys[1-curPoly].size());
-                
-                    //std::cout << "Vertex actual p2: " << poly2p1.x << " " << poly2p1.y << " " << poly2p1.z << std::endl;
-                    //std::cout << "Vertex next p2: " << poly2p2.x << " " << poly2p2.y << " " << poly2p2.z << std::endl;
-                
-                    /* generate geometry to see the planes
-                       std::vector<glm::vec3> frag1;
-                       std::vector<glm::vec3> frag2;
-                       frag1.push_back(poly1p1);
-                       frag1.push_back(poly1p2);
-                       frag1.push_back(glm::vec3(0,0,0));
-                
-                       frag2.push_back(poly2p1);
-                       frag2.push_back(poly2p2);
-                       frag2.push_back(glm::vec3(0,0,0));
-                
-                       Fragment* fragment1 = new Fragment(view->getVertexArrayID(), glm::vec3(0.0,0.0,0.0),GL_LINE_LOOP,GEO_INTERSECTION,frag1);
-                       Fragment* fragment2 = new Fragment(view->getVertexArrayID(), glm::vec3(1.0,0.0,1.0),GL_LINE_LOOP,GEO_INTERSECTION,frag2);
-                       fragment1->calculateBoundingBox();
-                       view->addGeometry(fragment1);
-                       fragment2->calculateBoundingBox();
-                       view->addGeometry(fragment2);*/
-
-                
-                    //calculate next point before check, so that if it intersects it does not do anything anymore ...
-                    idx[1-curPoly] = (idx[1-curPoly] + 1) % polys[1-curPoly].size();
-                
-                    //COMPUTE INTERSECTION
-                    //if no intersection: push the current point into result and advance one
-                    if (computeIntersection(poly1p1,poly1p2,poly2p1,poly2p2,intersectionpoint)&&(!intersect)){
-                    
-                        //TO DO....
-                        // checkRightTurn(poly1p1,poly1p2,poly2p1,poly2p2);
-                        intersect=1;
-                    
-                    }
-
-                
-            
-                }
-            }
-            // if nothing intersect, then push back the point
-            if (!intersect) {
-                //std::cout << "no intersection, then insert same point "<< idx[curPoly] << std::endl;
-                //std::cout << "Vertex inserted: " << poly1p1.x << " " << poly1p1.y << " " << poly1p1.z << std::endl;
-
-                result.push_back(polys[curPoly].at(idx[curPoly]));
-            
-            }
-            //if intersect then calculate the point
-            else{
-                //insert initial point of this vector
-                result.push_back(polys[curPoly].at(idx[curPoly]));
-
-                curPoly = 1 - curPoly;
-                //std::cout << "normalised Intersection point : "<< intersectionpoint.x << ", " << intersectionpoint.y << ", " << intersectionpoint.z << std::endl;
-                result.push_back(intersectionpoint);
-
-
-
-
-            }
-            //and increase our index for the current polygon whoever it is
-        
-            // std::cout << "num "<< (idx[curPoly] + 1)  << std::endl;
-            // std::cout << "num "<< (idx[curPoly] + 1)  << std::endl;
-
-            idx[curPoly] = (idx[curPoly] + 1) % polys[curPoly].size();
-            if ((result.size() >= 2) && (length(result.front() - result.back()) < epsilon)) {
-                break;
-            }
-        
-        
-        
-        }
-    }
+    std::cout << tryCut(fragments.front()->getVertices(), jline, result,result2) << std::endl;
 
     if (result.size()) {
         Fragment* fragment1 = new Fragment(view->getVertexArrayID(), glm::vec3(1.0,0.0,0.0),GL_LINE_STRIP,GEO_PATH,result);
         fragment1->calculateBoundingBox();
         view->addGeometry(fragment1);
+        return 1;
     }
-    return 0;  // [TW:] added to suppress warning
+    return 0;
 }
 
 void Fragmenter::listAllFragments(){
@@ -356,8 +264,6 @@ void Fragmenter::listAllFragments(){
     while (!tmpqueue.empty())
     {
         view->addGeometry(tmpqueue.front());
-        
-        std::cout << tmpqueue.front() << std::endl;
         tmpqueue.pop();
         
     }
@@ -417,14 +323,6 @@ bool  Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm:
 }
 
 
-bool  Fragmenter::checkRightTurn(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2)
-{
-    // TODO
-    return false;  // [TW:] added to suppress warning
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
 bool  Fragmenter::tests()
 {
     bool  success = true;
@@ -443,8 +341,8 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
                          std::vector<glm::vec3> &result1,
                          std::vector<glm::vec3> &result2)
 {
-    std::cout << "FRAGMENT: " << str(fragment) << std::endl;
-    std::cout << "FRACTURE: " << str(fracture) << std::endl;
+    //std::cout << "FRAGMENT: " << str(fragment) << std::endl;
+    //std::cout << "FRACTURE: " << str(fracture) << std::endl;
     
     double  originalArea = spherePolyArea(fragment);
     std::cout << "originalArea " << originalArea << std::endl;
@@ -466,11 +364,62 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
 
 //            std::cout << "result: " << (relAreaErr < 0.001 &&  std::max(area1 / area2, area2 / area1) < 4.0) << std::endl;
             return
-                relAreaErr < 0.001 &&                                       // single pieces, please
+                relAreaErr < 1e-5 &&                                       // single pieces, please
                              std::max(area1 / area2, area2 / area1) < 4.0;  // maximum area ratio
         }
     }
     return false;
+}
+
+// spherePolyRandomFracture produces spherical polygon of m * 2^niter points.
+std::vector<glm::vec3>  Fragmenter::spherePolyRandomFracture(const RandomFractureOptions &opt)
+{
+    auto  A = randRotationMatrix3();
+
+    std::vector<glm::vec3>  poly;
+    {
+        poly.reserve(opt.m);
+        const double  f = 2.0 * M_PI / opt.m;
+        for (int i=0; i<opt.m; ++i) {
+            glm::vec3  v((float)(f*i + f*opt.jitter * randSigned()),
+                         (float)(f*opt.amplitude * randSigned()),
+                         0.f);
+            poly.push_back(A * glm::vec3(cos(v.x)*cos(v.y), sin(v.x)*cos(v.y), sin(v.y)));
+        }
+    }
+
+    {
+        double  jitter = opt.jitter;
+        double  amplitude = opt.amplitude;
+        for (int iter=0; iter<opt.niter; ++iter) {
+            std::vector<glm::vec3>  newPoly;
+            newPoly.reserve(2 * poly.size());
+            for (int idx=0; idx<(int)poly.size(); ++idx) {
+                int  idxSucc = (idx + 1) % ((int)poly.size());
+
+                auto  w = glm::normalize(glm::cross(poly[idx], poly[idxSucc]));
+                auto  u = poly[idx];
+                auto  v = glm::cross(w, u);
+    
+                double  arclen = acos(glm::dot(poly[idxSucc], u));
+                double  midarclen = arclen * (0.5+jitter * randSigned());
+                double  midampl = arclen * opt.amplitude * randSigned();
+                auto  midpoint =
+                    u * float(cos(midarclen) * cos(midampl))
+                    + v * float(sin(midarclen) * cos(midampl))
+                    + w * float(sin(midampl));
+
+                newPoly.push_back(poly[idx]);
+                newPoly.push_back(midpoint);
+            }
+            poly.swap(newPoly);
+        
+            jitter *= opt.decay;
+            amplitude *= opt.decay;
+        }
+    }
+    
+    return poly;
 }
 
 bool  Fragmenter::epsilonSame(const glm::vec3 &a, const glm::vec3 &b, double epsilonScale)
