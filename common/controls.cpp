@@ -13,6 +13,7 @@ using namespace glm;
 glm::mat4 ViewMatrix;
 glm::mat4 ProjectionMatrix;
 glm::vec3 position = glm::vec3( 0, 0, 0);
+glm::vec3 direction  = glm::vec3( 0, 0, 0);
 
 
 glm::mat4 getViewMatrix(){
@@ -24,7 +25,9 @@ glm::mat4 getProjectionMatrix(){
 glm::vec3 getPosition(){
     return position;
 }
-
+glm::vec3 getDirection(){
+    return direction;
+}
 
 // Initial position : on +Z
 // Initial horizontal angle : toward -Z
@@ -58,7 +61,7 @@ void computeMatricesFromInputs(GLFWwindow* window, int width, int height, float 
 	glfwSetCursorPos(window, width / 2, height / 2);
 	//std::cout << "****************** " << std::endl;
 
-	//std::cout << "mouseSpeed: " <<  mouseSpeed << std::endl;
+	std::cout << "mouseSpeed: " <<  mouseSpeed << std::endl;
 
 	// Compute new orientation 
 	horizontalAngle += mouseSpeed * float(width/2 - xpos );
@@ -70,7 +73,7 @@ void computeMatricesFromInputs(GLFWwindow* window, int width, int height, float 
 
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
-	glm::vec3 direction(
+    direction =glm::vec3(
 		cos(verticalAngle) * sin(horizontalAngle), 
 		sin(verticalAngle),
 		cos(verticalAngle) * cos(horizontalAngle)
@@ -107,7 +110,10 @@ void computeMatricesFromInputs(GLFWwindow* window, int width, int height, float 
 	if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
 		position -= right * deltaTime * speed;
 	}
-	//std::cout << "position after changes: " << position.x << ", " << position.y << ", " << position.z << std::endl;
+	std::cout << "position after changes: " << position.x << ", " << position.y << ", " << position.z << std::endl;
+    
+    std::cout << "position after changes: " << direction.x << ", " << direction.y << ", " << direction.z << std::endl;
+
 
 	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
 	

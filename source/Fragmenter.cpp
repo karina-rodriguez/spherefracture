@@ -12,6 +12,8 @@ Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
 #endif
 };
 
+
+
 //////////////////////////////////////////////////////////////////////////////
 // Helpers
 //
@@ -72,7 +74,7 @@ Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double dens
     //seed two initial parts to fragment
     Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::vec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,fracture);
     fragment0->calculateBoundingBox();
-    view->addGeometry(fragment0);
+   // view->addGeometry(fragment0);
     fragments.push(fragment0);
     actualparts++;
     
@@ -105,7 +107,7 @@ int Fragmenter::fragment(){
         
         //try this cut and if it works add the two parts
         if( tryCut(fragments.front()->getVertices(), spherePolyRandomFracture(), result1,result2)){
-            //remove the last fragment on the queue as we have now deal with this
+            //remove the last fragment on the queue as we have now dealt with this
             fragments.pop();
             //display the fragments on screen
             glm::vec3 colorran = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
@@ -125,8 +127,7 @@ int Fragmenter::fragment(){
     }
     
     listAllFragments();
-    std::vector<glm::vec3> planepoints;
-    createPolytope(fragments,planepoints);
+    createPolytope();
     
 
     
@@ -142,10 +143,7 @@ int Fragmenter::testIntersections(std::vector<glm::vec3> jline){
     int curPoly = 0; // then one you’re “sitting on” while intersecting with the other
     int idx[2] = {0,0};
     
-    int index =0;
     int sizepoly1 = polys[0].size();
-    std::vector<glm::vec3>::iterator itr0 = polys[0].begin();
-    glm::vec3 polyinitial = *itr0;
     
     //std::cout <<  jline->getNumSteps() << std::endl;
     // compute intersections
@@ -264,70 +262,37 @@ int Fragmenter::testFragment(std::vector<glm::vec3> jline)
     return 0;
 }
 
-int Fragmenter::createPolytope(const std::queue<Fragment*> fragmentst, std::vector<glm::vec3>& planepoints){
+int Fragmenter::createPolytope(){
+    std::queue<Fragment*> tmpqueue = fragments;
     
-  /*  std::queue<Fragment*> tmpqueue = fragmentst;
-   /* while (!tmpqueue.empty())
-    {
-        Fragment* fragment = tmpqueue.front();
-        fragment->theplane = {glm::vec3(1,0,0), glm::vec3(1,0,0)};
-
-        //view->addGeometry(tmpqueue.front());
-    //    fragment->createPlane(fragment->getVertices());
-        for (int n=0;n<fragment->getVertices().size();n++){
-            glm::vec3 point;
-            fragment->checkIntersectionwithPlane(fragment->getVertices()[n],point);
-            planepoints.push_back(point);
-        }
-    //    tmpqueue.pop();
-    std::cout << " planepoints: " << planepoints.size() << std::endl;
-        tmpqueue.pop();
-
-    std::vector<glm::vec3> lineplane;
-    lineplane.push_back(glm::vec3(0,0,0));
-    lineplane.push_back(fragment->theplane.centroid);
-    
-    std::cout << "centroid : " << fragment->theplane.centroid.x << ", " << fragment->theplane.centroid.y << ", " << fragment->theplane.centroid.z  << std::endl;
-
-  /*  Fragment* tfragment1 = new Fragment(view->getVertexArrayID(), glm::vec3(1.0,0.0,1.0),GL_LINE_STRIP,GEO_INTERSECTION,lineplane);
-    tfragment1->calculateBoundingBox();
-    view->addGeometry(tfragment1);*/
-    
-    std::vector<glm::vec3> knownplane;
-    knownplane.push_back(glm::vec3(1,-1,0));
-    knownplane.push_back(glm::vec3(-1,-1,0));
-    knownplane.push_back(glm::vec3(0,-1,1));
-
-    //test for a plane which we know with a normal of Y and a centroid of 0
-    Fragment* graf = new Fragment(view->getVertexArrayID(), glm::vec3(1.0,0.0,1.0),GL_LINE_STRIP,GEO_INTERSECTION,knownplane);
-    
-    graf->theplane = {glm::vec3(0,-1,0), glm::vec3(0,-5,0)};
-    
-    glm::vec3 point;
-    graf->checkIntersectionwithPlane(graf->getVertices()[0],point);
-    graf->checkIntersectionwithPlane(graf->getVertices()[1],point);
-    graf->checkIntersectionwithPlane(graf->getVertices()[2],point);
-
-
-   /* Fragment* tfragment2 = new Fragment(view->getVertexArrayID(), glm::vec3(1.0,0.0,1.0),GL_LINE_LOOP,GEO_INTERSECTION,planepoints);
-    tfragment2->calculateBoundingBox();
-    view->addGeometry(tfragment2);*/
-   
-  //  }
-    return 1;
-    
-   /* std::queue<Fragment*> tmpqueue = fragments;
+      
+    int i = 0;
     while (!tmpqueue.empty())
     {
-        view->addGeometry(tmpqueue.front());
-        tmpqueue.front()->createPlane(tmpqueue.front()->getVertices());
+        Fragment* fragment = tmpqueue.front();
+        fragment->createSTL();
+        //draw the plane
+        std::cout << " planepoints: " << fragment->farplanepointstodraw.size() << std::endl;
+        
+        glm::vec3 colorran = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
+        
+        
+        Fragment* tfragment2 = new Fragment(view->getVertexArrayID(), colorran,GL_TRIANGLE_FAN,GEO_SHAPE,fragment->farplanepointstodraw);
+        tfragment2->calculateBoundingBox();
+        view->addGeometry(tfragment2);
+        
+        
+        Fragment* tfragment22 = new Fragment(view->getVertexArrayID(), glm::vec3(1,0,0),GL_TRIANGLE_FAN,GEO_SHAPE,fragment->farplanepointstodraw1);
+        tfragment22->calculateBoundingBox();
+        view->addGeometry(tfragment22);
         
         tmpqueue.pop();
-    tmpqueue.front()->createPlane(tmpqueue.front()->getVertices());
 
-        
-        
-    }*/
+        if (i==0) break;
+    }
+    return 1;
+    
+
 }
 
 void Fragmenter::listAllFragments(){
@@ -337,9 +302,6 @@ void Fragmenter::listAllFragments(){
         view->addGeometry(tmpqueue.front());
 
         tmpqueue.pop();
-        
-
-        
         
     }
 

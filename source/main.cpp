@@ -123,13 +123,16 @@ int main(int argc, char *argv[] ){
 
 
     
+    
     Geometry* geo = new Geometry(vertexarrayID,glm::vec3(0.7,0.7,0.7),GL_POINTS,GEO_SHAPE);
     geo->setDensity(densitysphere);
     geo->generateSphere();
     geo->calculateBoundingBox();
     // geo->exportPoints();
     myview->addGeometry(geo);
+
     myview->calculateMaxBoundingBox();
+    
 
     if (myview->initialise() != -1) {
         do {
