@@ -104,43 +104,35 @@ int Fragmenter::fragment(){
 
         
     
-        std::cout << " a " << std::endl;
 
         //try this cut and if it works add the two parts
         if( tryCut(fragments.front()->getVertices(), spherePolyRandomFracture(), result1,result2)){
             //remove the last fragment on the queue as we have now dealt with this
             
-            std::cout << " b " << std::endl;
 
             fragments.pop();
             //display the fragments on screen
             glm::vec3 colorran = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
 
-            std::cout << " c " << std::endl;
 
             //create the two new fragments
             Fragment* newfrag1 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result1);
             fragments.push(newfrag1);
             
 
-            std::cout << " d " << std::endl;
 
             Fragment* newfrag2 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result2);
             fragments.push(newfrag2);
             actualparts+=1;
             
-            std::cout << " e " << std::endl;
 
         }
         
     }
-    std::cout << " f " << std::endl;
 
     listAllFragments();
-    std::cout << " g " << std::endl;
 
     createPolytope();
-    std::cout << " h " << std::endl;
 
 
     
@@ -278,7 +270,7 @@ int Fragmenter::testFragment(std::vector<glm::vec3> jline)
 int Fragmenter::createPolytope(){
     std::queue<Fragment*> tmpqueue = fragments;
     
-    int counterfile;
+    int counterfile=0;
     while (!tmpqueue.empty())
     {
         Fragment* fragment = tmpqueue.front();
