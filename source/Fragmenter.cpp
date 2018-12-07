@@ -104,31 +104,44 @@ int Fragmenter::fragment(){
 
         
     
-        
+        std::cout << " a " << std::endl;
+
         //try this cut and if it works add the two parts
         if( tryCut(fragments.front()->getVertices(), spherePolyRandomFracture(), result1,result2)){
             //remove the last fragment on the queue as we have now dealt with this
+            
+            std::cout << " b " << std::endl;
+
             fragments.pop();
             //display the fragments on screen
             glm::vec3 colorran = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
 
+            std::cout << " c " << std::endl;
 
             //create the two new fragments
             Fragment* newfrag1 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result1);
             fragments.push(newfrag1);
             
 
+            std::cout << " d " << std::endl;
 
             Fragment* newfrag2 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result2);
             fragments.push(newfrag2);
             actualparts+=1;
+            
+            std::cout << " e " << std::endl;
+
         }
         
     }
-    
+    std::cout << " f " << std::endl;
+
     listAllFragments();
+    std::cout << " g " << std::endl;
+
     createPolytope();
-    
+    std::cout << " h " << std::endl;
+
 
     
     return 1;
@@ -265,16 +278,14 @@ int Fragmenter::testFragment(std::vector<glm::vec3> jline)
 int Fragmenter::createPolytope(){
     std::queue<Fragment*> tmpqueue = fragments;
     
-      
-    int i = 0;
+    int counterfile;
     while (!tmpqueue.empty())
     {
         Fragment* fragment = tmpqueue.front();
-        fragment->createSTL();
+        fragment->createSTLwithlargecones(counterfile++);
         //draw the plane
-        std::cout << " planepoints: " << fragment->farplanepointstodraw.size() << std::endl;
         
-        glm::vec3 colorran = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
+      /*  glm::vec3 colorran = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
         
         
         Fragment* tfragment2 = new Fragment(view->getVertexArrayID(), colorran,GL_TRIANGLE_FAN,GEO_SHAPE,fragment->farplanepointstodraw);
@@ -284,11 +295,10 @@ int Fragmenter::createPolytope(){
         
         Fragment* tfragment22 = new Fragment(view->getVertexArrayID(), glm::vec3(1,0,0),GL_TRIANGLE_FAN,GEO_SHAPE,fragment->farplanepointstodraw1);
         tfragment22->calculateBoundingBox();
-        view->addGeometry(tfragment22);
+        view->addGeometry(tfragment22);*/
         
         tmpqueue.pop();
 
-        if (i==0) break;
     }
     return 1;
     

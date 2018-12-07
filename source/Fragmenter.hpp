@@ -4,6 +4,8 @@
 #include "View.hpp"
 #include "Fragment.hpp"
 
+
+
 class Fragmenter {
 
 public:
@@ -42,6 +44,7 @@ public:
     int testIntersections(std::vector<glm::vec3> jline);
     int testFragment(std::vector<glm::vec3> jline);
     void listAllFragments();
+    int createPolytope();
         
     
     static bool  computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2,glm::vec3& intersectionpoint);

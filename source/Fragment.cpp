@@ -226,17 +226,18 @@ glm::mat4 Fragment::getTransformationForPolygoninXYPlane(Plane theplane){
  *    - Computes a polygon partition using CGAL - this requires of simple polygons!
  *
  */
-void Fragment::createSTL(){
-    
+void Fragment::createSTL(int counterfile){
     static const double closestvalue = 0.001;
-    static const double furtherstvalue = 1.2;
-    
+    static const double furtherstvalue = 4;
+
     //view->addGeometry(tmpqueue.front());
     //create the planes for intersection, one near the centre, the other far away from the radius of the sphere
     createPlanes(getVertices(), closestvalue, furtherstvalue);
+
     
-    
-    for (int n=0;n<getVertices().size();n++){
+   /* for (int n=0;n<getVertices().size();n++){
+        
+        std::cout << getVertices()[n].x << " " << getVertices()[n].y << " " << getVertices()[n].z << std::endl;
         glm::vec3 pointcloseplane,pointfarplane;
         
         //get the points of the side closest to the centre of the sphere
@@ -248,11 +249,12 @@ void Fragment::createSTL(){
         farplanepoints.push_back(pointfarplane);
         
         
-    }
+    }*/
+    
 
     
     //check if they are actually on the plane
-    bool allpointsonplane=1;
+  /*  bool allpointsonplane=1;
     for (int n=0;n<farplanepoints.size();n++){
         
         glm::vec3 v1(farplanepoints[n]-getFurthestPlane().centroid);
@@ -314,7 +316,7 @@ void Fragment::createSTL(){
 
     
     //get the position of the centre
-    glm::vec4 cp(getFurthestPlane().centroid.x,getFurthestPlane().centroid.y,getFurthestPlane().centroid.z,1);
+/*    glm::vec4 cp(getFurthestPlane().centroid.x,getFurthestPlane().centroid.y,getFurthestPlane().centroid.z,1);
     glm::mat4 trans = getTransformationForPolygoninXYPlane(getFurthestPlane());
     glm::vec4 newcentroid = cp*trans;
     farplanepointstodraw.push_back(glm::vec3(newcentroid.x,newcentroid.y,newcentroid.z));
@@ -329,12 +331,31 @@ void Fragment::createSTL(){
     for (int n=0;n<farplanepoints.size();n++){
         
         glm::vec4 p(farplanepoints[n].x,farplanepoints[n].y,farplanepoints[n].z,1);
+        std::cout <<  p.x << " " <<  p.y << " "  << p.z << " "   << std::endl;
+
+      //  glm::vec4 newp = p*trans;
+       // farplanepointstodraw.push_back(glm::vec3(newp.x,newp.y,newp.z));
+        //farplanepointstodraw1.push_back(farplanepoints[n]);
+        //farpolygon.push_back(Point_2(newp.x, newp.y));
+
+       // std::cout <<  newp.x << " " <<  newp.y << " "  << newp.z << " "   << std::endl;
+        
+    }
+    
+    
+     std::cout <<  "&&&&&&&"   << std::endl;
+
+    for (int n=0;n<farplanepoints.size();n++){
+        
+        glm::vec4 p(farplanepoints[n].x,farplanepoints[n].y,farplanepoints[n].z,1);
+      //  std::cout <<  p.x << " " <<  p.y << " "  << p.z << " "   << std::endl;
+        
         glm::vec4 newp = p*trans;
         farplanepointstodraw.push_back(glm::vec3(newp.x,newp.y,newp.z));
         farplanepointstodraw1.push_back(farplanepoints[n]);
         farpolygon.push_back(Point_2(newp.x, newp.y));
-
-       // std::cout <<  " new Z: " <<   newp.z  << std::endl;
+        
+         std::cout <<  newp.x << " " <<  newp.y << " "  << newp.z << " "   << std::endl;
         
     }
     
@@ -343,6 +364,7 @@ void Fragment::createSTL(){
     
     std::cout <<  "size: " <<   farplanepoints.size()  << std::endl;
 
+   
     for (std::vector<glm::vec3>::reverse_iterator it = farplanepoints.rbegin();
          it != farplanepoints.rend(); ++it ) {
         glm::vec3 pos = *it;
@@ -358,10 +380,30 @@ void Fragment::createSTL(){
     std::cout << "The polygon is " <<
     (farpolygon.is_convex() ? "" : "not ") << "convex." << std::endl;
     
-    std::cout << "The polygon is oriented " <<  ((farpolygon.orientation()<0) ? "Counterclockwise " : "Clockwise ") << std::endl;
+    std::cout << "The polygon is oriented " ;
+    if (farpolygon.orientation() == CGAL::CLOCKWISE) std::cout <<  "Clockwise " << std::endl;
+    if (farpolygon.orientation() == CGAL::COUNTERCLOCKWISE) std::cout <<  "Clockwise "<< std::endl;
     
     
-    std::cout <<  "size cgal: " <<   farpolygon.size()  << std::endl;
+    //export points
+    Point_set point_set;
+    
+    for (VertexIterator vi = farpolygon.vertices_begin(); vi != farpolygon.vertices_end(); ++vi){
+       // std::cout << "vertex " << n++ << " = " << *vi << std::endl;
+       // std::cout << "vertex " << n++ << " = " << *vi->x() << std::endl;
+        Point_2 &pp = *vi;
+        
+      //  Vertex &vert = *vi;
+
+        
+        //*vi.x();
+        //Polygon_2 pp = *vi;
+        point_set.insert(Point(double(pp.x()), double(pp.y()),double(0)));
+    }
+    
+
+    
+    /*std::cout <<  "size cgal: " <<   farpolygon.size()  << std::endl;
     if (!farpolygon.is_simple())
     {
     CGAL::approx_convex_partition_2(farpolygon.vertices_begin(),
@@ -370,10 +412,103 @@ void Fragment::createSTL(){
         
     }
    
-   /* assert(CGAL::convex_partition_is_valid_2(farpolygon.vertices_begin(),
+    assert(CGAL::convex_partition_is_valid_2(farpolygon.vertices_begin(),
                                              farpolygon.vertices_end(),
                                              partition_polys.begin(),
-                                             partition_polys.end()));
+                                             partition_polys.end()));*/
     
-   */
+   
+}
+void Fragment::createSTLwithlargecones(int counterfile){
+    static const double closestvalue = 0.001;
+    static const double furtherstvalue = 4;
+    
+    //view->addGeometry(tmpqueue.front());
+    //create the planes for intersection, one near the centre, the other far away from the radius of the sphere
+    createPlanes(getVertices(), closestvalue, furtherstvalue);
+    
+    std::vector<glm::vec3> verticespolytope;
+    std::vector<int> indicespolytope;
+    std::vector<glm::vec3> normalspolytope;
+    
+
+    const glm::vec3 centroidfurthestplane = getFurthestPlane().centroid;
+    const glm::vec3 centroidclosestplane = getClosestPlane().centroid;
+    int c=0;
+    //**********************top part**********************
+    for (int n=0;n<vertices.size()-1;n++){
+       glm::vec3 pos1 = vertices[n];
+        glm::vec3 pos2 = vertices[n+1];
+        
+        //add the centroid
+        verticespolytope.push_back(centroidfurthestplane);
+        //add as well the two vertices next two each other
+        verticespolytope.push_back(pos1);
+        verticespolytope.push_back(pos2);
+        
+        //add the normal of the triangle
+        glm::vec3 norm = glm::cross(glm::vec3(centroidfurthestplane-pos1),glm::vec3(centroidfurthestplane-pos2));
+        normalspolytope.push_back(norm);
+        normalspolytope.push_back(norm);
+        normalspolytope.push_back(norm);
+
+        c++;
+    }
+    
+    //add the last point and the one at the begining
+    glm::vec3 pos1 = vertices[vertices.size()-1];
+    glm::vec3 pos2 = vertices[0];
+    verticespolytope.push_back(centroidfurthestplane);
+    verticespolytope.push_back(pos1);
+    verticespolytope.push_back(pos2);
+    
+    //add the normal of the triangle
+//    glm::vec3 norm = glm::cross(glm::vec3(pos1-centroidfurthestplane),glm::vec3(pos2-centroidfurthestplane));
+//    normalspolytope.push_back(norm);
+ //   normalspolytope.push_back(norm);
+ //   normalspolytope.push_back(norm);
+    c++;
+
+    //do all indices
+ //   for (int n=0;n<verticespolytope.size();n++){
+ //       indicespolytope.push_back(n);
+ //   }
+    
+
+    //**********************bottom part**********************
+   for (int n=0;n<vertices.size()-1;n++){
+        glm::vec3 pos1 = vertices[n];
+        glm::vec3 pos2 = vertices[n+1];
+        
+        //add the centroid
+        //add as well the two vertices next two each other
+        verticespolytope.push_back(pos1);
+       verticespolytope.push_back(centroidclosestplane);
+        verticespolytope.push_back(pos2);
+        
+    }
+
+    //add the last point and the one at the begining
+    
+    glm::vec3 posi1 = vertices[vertices.size()-1];
+    glm::vec3 posi2 = vertices[0];
+    verticespolytope.push_back(posi1);
+    verticespolytope.push_back(centroidclosestplane);
+    verticespolytope.push_back(posi2);
+    
+    //add the normal of the triangle
+   // glm::vec3 normi = -glm::cross(glm::vec3(posi2-centroidclosestplane),glm::vec3(posi1-centroidclosestplane));
+   // normalspolytope.push_back(normi);
+   // normalspolytope.push_back(normi);
+   // normalspolytope.push_back(normi);
+   
+
+
+    
+    // Writing result in STL format
+    std::string filename = "..//openscad//fragmentsphere//fragment_"+std::to_string(counterfile)+".stl";
+
+    exportScene(filename, verticespolytope, normalspolytope, indicespolytope);
+
+    
 }

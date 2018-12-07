@@ -129,12 +129,12 @@ void View::update() {
                                         glm::vec3(0,0,0), // and looks at the origin
                                          glm::vec3(0, 1, 0)
                                          );
-               /* glm::mat4 camera1 = glm::lookAt(
+                glm::mat4 camera1 = glm::lookAt(
                                                glm::vec3(0,0,0), // Camera is at (0,0,-1), in World Space
                                                direction, // and looks at the origin
                                                glm::vec3(0, 1, 0)
-                                               );*/
-                glm::mat4 View = camera; //* camera1; //* getViewMatrix();
+                                               );
+                glm::mat4 View = camera * camera1; //* getViewMatrix();
             
             //***********MODEL*****************
             glm::mat4 Model = glm::mat4(1.0);//glm::rotate((float)90.0,glm::vec3(0.0,1.0,0.0));//glm::mat4(1.0);
