@@ -335,6 +335,8 @@ bool exportScene( const std::string& pFile,
                  const std::vector<glm::vec3> thenormals,
                  const std::vector<int> theindices)
 {
+    
+    
     aiScene scene;
     scene.mRootNode = new aiNode();
     
@@ -358,87 +360,36 @@ bool exportScene( const std::string& pFile,
     
     auto pMesh = scene.mMeshes[ 0 ];
     
-    std::cout << " VERTICES SIZE " << thevertices.size() << " " << thenormals.size() << " " << theindices.size() << std::endl;
-    
-    
-    /*
-    
-    //Default Fill Location Vector
-    int draw_order[36] =
-    {
-        0,2,1,      2,3,1,
-        1,3,5,      3,7,5,
-        5,7,4,      7,6,4,
-        4,6,0,      6,2,0,
-        4,0,5,      0,1,5,
-        2,6,3,      6,7,3
-    };
-    
-    glm::vec3 data[8] =
-    {
-        glm::vec3(-1.0f/2.0f,1.0f/2.0f,1.0f/2.0f),
-        glm::vec3(1.0f/2.0f,1.0f/2.0f,1.0f/2.0f),
-        glm::vec3(-1.0f/2.0f,-1.0f/2.0f,1.0f/2.0f),
-        glm::vec3(1.0f/2.0f,-1.0f/2.0f,1.0f/2.0f),
-        glm::vec3(-1.0f/2.0f,1.0f/2.0f,-1.0f/2.0f),
-        glm::vec3(1.0f/2.0f,1.0f/2.0f,-1.0f/2.0f),
-        glm::vec3(-1.0f/2.0f,-1.0f/2.0f,-1.0f/2.0f),
-        glm::vec3(1.0f/2.0f,-1.0f/2.0f,-1.0f/2.0f)
-    };
-    
-    for(int i = 0; i < 36; i++)
-    {
-        vertices.push_back(data[draw_order[i]]);
-    }
-    
-    //Default Fill Normal Vector
-    for(int i = 0; i < 36; i++)
-    {
-        if(i < 6)       {normals.push_back(glm::vec3(0,0,1));}
-        else if(i < 12) {normals.push_back(glm::vec3(1,0,0));}
-        else if(i < 18) {normals.push_back(glm::vec3(0,0,-1));}
-        else if(i < 24) {normals.push_back(glm::vec3(-1,0,0));}
-        else if(i < 30) {normals.push_back(glm::vec3(0,1,0));}
-        else if(i < 36) {normals.push_back(glm::vec3(0,- 1,0));}
-    }
-    
-    //Default Fill UV Vector
-    for(int i = 0; i < 6; i++)
-    {
-        uvs.push_back(glm::vec2(0,1));
-        uvs.push_back(glm::vec2(0,0));
-        uvs.push_back(glm::vec2(1,1));
-        uvs.push_back(glm::vec2(0,0));
-        uvs.push_back(glm::vec2(1,0));
-        uvs.push_back(glm::vec2(1,1));
-    }*/
-    
-    //const auto& vVertices = thevertices;
     
     pMesh->mVertices = new aiVector3D[ thevertices.size() ];
     pMesh->mNormals = new aiVector3D[ thevertices.size() ];
-    
+
     pMesh->mNumVertices = thevertices.size();
-    
- //   pMesh->mTextureCoords[ 0 ] = new aiVector3D[ vVertices.size() ];
- //   pMesh->mNumUVComponents[ 0 ] = vVertices.size();
-    
     int j = 0;
     for ( auto itr = thevertices.begin(); itr != thevertices.end(); ++itr )
     {
-        pMesh->mVertices[ itr - thevertices.begin() ] = aiVector3D( thevertices[j].x, thevertices[j].y, thevertices[j].z );
+
+        pMesh->mVertices[ itr - thevertices.begin() ] = aiVector3D(thevertices[j].x, thevertices[j].y, thevertices[j].z );
+        
+
         pMesh->mNormals[ itr - thevertices.begin() ] = aiVector3D( thenormals[j].x, thenormals[j].y, thenormals[j].z );
   //      pMesh->mTextureCoords[0][ itr - vVertices.begin() ] = aiVector3D( uvs[j].x, uvs[j].y, 0 );
-        j++;
     }
     
+   
+    
+
     pMesh->mFaces = new aiFace[ thevertices.size() / 3 ];
     pMesh->mNumFaces = (unsigned int)(thevertices.size() / 3);
+    
     
     int k = 0;
     for(int i = 0; i < (thevertices.size() / 3); i++)
     {
+       
+
         aiFace &face = pMesh->mFaces[i];
+
         face.mIndices = new unsigned int[3];
         face.mNumIndices = 3;
         
@@ -446,16 +397,60 @@ bool exportScene( const std::string& pFile,
         face.mIndices[1] = k+1;
         face.mIndices[2] = k+2;
         k = k + 3;
+        
+        
+
     }
+
     
-    //mExportFormatDesc->id is "collada"  and mFilePath is "C:/Users/kevin/Desktop/myColladaFile.dae"
-   // mAiExporter->Export(scene, mExportFormatDesc->id, mFilePath);
+
+    
+    
     
     Assimp::Exporter* exp;
     exp = new Assimp::Exporter();
     const char* id = "stl";
+    
     exp->Export(&scene, id, pFile);
- 
+
+    return 1;
+}
+bool myOwnExportSceneSTL( const std::string& pFile,
+                 std::vector<glm::vec3> thevertices,
+                 const std::vector<glm::vec3> thenormals)
+{
+    
+    std::ofstream myfile;
+    myfile.open (pFile);
+    //start the file
+    myfile << "solid fragmentGeometry\n";
+    
+    int k = 0;
+    for(int i = 0; i < (thevertices.size() / 3); i++)
+    {
+        glm::vec3 pos0 = thevertices[k];
+        glm::vec3 pos1 = thevertices[k+1];
+        glm::vec3 pos2 = thevertices[k+2];
+        glm::vec3 norm = thenormals[k];
+        
+        
+        myfile << "facet normal " << norm.x << " " << norm.y << " " << norm.z << "\n";
+        myfile << "outer loop\n";
+        myfile << "vertex " << pos0.x << " " << pos0.y << " " << pos0.z << "\n";
+        myfile << "vertex " << pos1.x << " " << pos1.y << " " << pos1.z << "\n";
+        myfile << "vertex " << pos2.x << " " << pos2.y << " " << pos2.z << "\n";
+
+        myfile << "end loop\n";
+        myfile << "end factet\n";
+        k = k+3;
+        
+    }
+    
+    //end the file
+    myfile << "solid fragmentGeometry\n";
+    
+    myfile.close();
+    
     return 1;
 }
 #endif

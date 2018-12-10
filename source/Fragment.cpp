@@ -25,7 +25,7 @@ Fragment::Fragment(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, ge
         
     }
     
-    
+    maxdistancecentroidfragment=0;
     storePointSet(vertices);
     
     glGenBuffers(1, &vertexbuffer);
@@ -85,6 +85,13 @@ int Fragment::createPlanes(const std::vector<glm::vec3> vertices, const double c
    
     for (int i=0;i<vertices.size();i++) {
         glm::vec3 r = vertices[i] - centroid;
+        double distance = glm::distance(vertices[i],centroid);
+        
+      //  std::cout << "distance: " << distance << std::endl;
+        if (distance>maxdistancecentroidfragment) {
+            maxdistancecentroidfragment=distance;
+            maxdistancecentroidfragmentvertex =vertices[i];
+        }
         xx += r.x * r.x;
         xy += r.x * r.y;
         xz += r.x * r.z;
@@ -98,7 +105,7 @@ int Fragment::createPlanes(const std::vector<glm::vec3> vertices, const double c
     double det_z = xx*yy - xy*xy;
     
     double det_max = max(det_x, det_y, det_z);
-    std::cout << "Determinants: " << det_x << ", " << det_y << ", " << det_z << ", " << det_max << std::endl;
+  //  std::cout << "Determinants: " << det_x << ", " << det_y << ", " << det_z << ", " << det_max << std::endl;
     
     
     if (det_max <= 0.0) {
@@ -419,13 +426,19 @@ void Fragment::createSTL(int counterfile){
     
    
 }
+
 void Fragment::createSTLwithlargecones(int counterfile){
     static const double closestvalue = 0.001;
     static const double furtherstvalue = 4;
     
+    std::cout << std::endl;
+    std::cout << "------------pFile: " << counterfile << std::endl;
+    
     //view->addGeometry(tmpqueue.front());
     //create the planes for intersection, one near the centre, the other far away from the radius of the sphere
     createPlanes(getVertices(), closestvalue, furtherstvalue);
+    
+    //std::cout << "**** " << glm::degrees(acos(glm::dot(maxdistancecentroidfragmentvertex,plane.centroid))) << std::endl;
     
     std::vector<glm::vec3> verticespolytope;
     std::vector<int> indicespolytope;
@@ -434,7 +447,6 @@ void Fragment::createSTLwithlargecones(int counterfile){
 
     const glm::vec3 centroidfurthestplane = getFurthestPlane().centroid;
     const glm::vec3 centroidclosestplane = getClosestPlane().centroid;
-    int c=0;
     //**********************top part**********************
     for (int n=0;n<vertices.size()-1;n++){
        glm::vec3 pos1 = vertices[n];
@@ -452,7 +464,6 @@ void Fragment::createSTLwithlargecones(int counterfile){
         normalspolytope.push_back(norm);
         normalspolytope.push_back(norm);
 
-        c++;
     }
     
     //add the last point and the one at the begining
@@ -463,52 +474,67 @@ void Fragment::createSTLwithlargecones(int counterfile){
     verticespolytope.push_back(pos2);
     
     //add the normal of the triangle
-//    glm::vec3 norm = glm::cross(glm::vec3(pos1-centroidfurthestplane),glm::vec3(pos2-centroidfurthestplane));
-//    normalspolytope.push_back(norm);
- //   normalspolytope.push_back(norm);
- //   normalspolytope.push_back(norm);
-    c++;
+    glm::vec3 norm = glm::cross(glm::vec3(pos1-centroidfurthestplane),glm::vec3(pos2-centroidfurthestplane));
+    normalspolytope.push_back(norm);
+    normalspolytope.push_back(norm);
+    normalspolytope.push_back(norm);
 
-    //do all indices
- //   for (int n=0;n<verticespolytope.size();n++){
- //       indicespolytope.push_back(n);
- //   }
+  
     
-
+/*    verticespolytope.push_back(glm::vec3(1,0,0));
+    verticespolytope.push_back(glm::vec3(0,0,0));
+    verticespolytope.push_back(glm::vec3(0,1,0));
+    
+    normalspolytope.push_back(glm::vec3(0,0,1));
+    normalspolytope.push_back(glm::vec3(0,0,1));
+    normalspolytope.push_back(glm::vec3(0,0,1));*/
+    
     //**********************bottom part**********************
    for (int n=0;n<vertices.size()-1;n++){
+
         glm::vec3 pos1 = vertices[n];
         glm::vec3 pos2 = vertices[n+1];
-        
+       
+       std::cout << "pos1: " << pos1.x << ", " << pos1.y << ", " << pos1.z <<  std::endl;
+       std::cout << "pos2: " << pos2.x << ", " << pos2.y << ", " << pos2.z <<  std::endl;
+
         //add the centroid
         //add as well the two vertices next two each other
         verticespolytope.push_back(pos1);
-       verticespolytope.push_back(centroidclosestplane);
+        verticespolytope.push_back(glm::vec3(0,0,0));
         verticespolytope.push_back(pos2);
-        
+       
+       
+       //add the normal of the triangle
+       glm::vec3 norm = glm::cross(glm::vec3(pos2),glm::vec3(pos1));
+       
+       std::cout << "Normal: " << norm.x << ", " << norm.y << ", " << norm.z <<  std::endl;
+       normalspolytope.push_back(norm);
+       normalspolytope.push_back(norm);
+       normalspolytope.push_back(norm);
+       
     }
 
     //add the last point and the one at the begining
-    
     glm::vec3 posi1 = vertices[vertices.size()-1];
     glm::vec3 posi2 = vertices[0];
     verticespolytope.push_back(posi1);
-    verticespolytope.push_back(centroidclosestplane);
+    verticespolytope.push_back(glm::vec3(0,0,0));
     verticespolytope.push_back(posi2);
     
     //add the normal of the triangle
-   // glm::vec3 normi = -glm::cross(glm::vec3(posi2-centroidclosestplane),glm::vec3(posi1-centroidclosestplane));
-   // normalspolytope.push_back(normi);
-   // normalspolytope.push_back(normi);
-   // normalspolytope.push_back(normi);
+    glm::vec3 normi = -glm::cross(glm::vec3(posi2),glm::vec3(posi1));
+    normalspolytope.push_back(normi);
+    normalspolytope.push_back(normi);
+    normalspolytope.push_back(normi);
    
 
 
-    
+
     // Writing result in STL format
     std::string filename = "..//openscad//fragmentsphere//fragment_"+std::to_string(counterfile)+".stl";
 
-    exportScene(filename, verticespolytope, normalspolytope, indicespolytope);
-
+    //exportScene(filename, verticespolytope, normalspolytope, indicespolytope);
+    myOwnExportSceneSTL(filename, verticespolytope, normalspolytope);
     
 }

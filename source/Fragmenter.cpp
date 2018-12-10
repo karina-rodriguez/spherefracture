@@ -275,20 +275,6 @@ int Fragmenter::createPolytope(){
     {
         Fragment* fragment = tmpqueue.front();
         fragment->createSTLwithlargecones(counterfile++);
-        //draw the plane
-        
-      /*  glm::vec3 colorran = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
-        
-        
-        Fragment* tfragment2 = new Fragment(view->getVertexArrayID(), colorran,GL_TRIANGLE_FAN,GEO_SHAPE,fragment->farplanepointstodraw);
-        tfragment2->calculateBoundingBox();
-        view->addGeometry(tfragment2);
-        
-        
-        Fragment* tfragment22 = new Fragment(view->getVertexArrayID(), glm::vec3(1,0,0),GL_TRIANGLE_FAN,GEO_SHAPE,fragment->farplanepointstodraw1);
-        tfragment22->calculateBoundingBox();
-        view->addGeometry(tfragment22);*/
-        
         tmpqueue.pop();
 
     }
@@ -383,12 +369,23 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
     //std::cout << "FRAGMENT: " << str(fragment) << std::endl;
     //std::cout << "FRACTURE: " << str(fracture) << std::endl;
     
+    
+       // std::cout << (fragments.size()>4)&&(checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2))){
+
+        
     double  originalArea = spherePolyArea(fragment);
     std::cout << "originalArea " << originalArea << std::endl;
 
     if (spherePolyIntersect(fragment, fracture, result1)) {
+        
+
+        
         std::vector<glm::vec3>  revFracture(fracture.rbegin(), fracture.rend());
         if (spherePolyIntersect(fragment, revFracture, result2)) {
+            
+//((fragments.size()>4)&&(checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2))) &&
+
+            
             double  area1 = spherePolyArea(result1);
             std::cout << "area1 " << area1 << std::endl;
 
@@ -402,12 +399,22 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
             std::cout << "relAreaErr " << relAreaErr << std::endl;
 
 //            std::cout << "result: " << (relAreaErr < 0.001 &&  std::max(area1 / area2, area2 / area1) < 4.0) << std::endl;
-            return
-                relAreaErr < 1e-5 &&                                       // single pieces, please
-                             std::max(area1 / area2, area2 / area1) < 4.0;  // maximum area ratio
+            
+            //std::cout << "eval : " << fragments.size() << " " << (fragments.size()>1) << " " << checkFragmentSizeSuitable(result1) << " " << checkFragmentSizeSuitable(result2) << std::endl;
+
+            
+            
+            
+                if (relAreaErr < 1e-5 &&                                       // single pieces, please
+                             std::max(area1 / area2, area2 / area1) < 4.0)  // maximum area ratio
+            
+                    return
+                    ((fragments.size()>1) && (checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2))); // pieces of radius less than 0.9
+            
         }
     }
     return false;
+    
 }
 
 // spherePolyRandomFracture produces spherical polygon of m * 2^niter points.
@@ -618,4 +625,33 @@ bool  spherePolyInsideTest(const std::vector<glm::vec3> &poly, const glm::vec3 &
     return floor(0.5 + sum / (2*M_PI)) > 0;
 }
 
-//////////////////////////////////////////////////////////////////////////////
+bool Fragmenter::checkFragmentSizeSuitable(const std::vector<glm::vec3> poly){
+    
+    //min sphere for
+    Point  P[poly.size()];
+    double coord[3];
+    for (int n=0;n<poly.size();n++){
+      //  std::cout << "Point: " << (double)poly[n].x << ", " << (double)poly[n].y << ", " << (double)poly[n].z << std::endl;
+        
+        coord[0] = (double)poly[n].x;
+        coord[1] = (double)poly[n].y;
+        coord[2] = (double)poly[n].z;
+        P[n] = Point(3, coord,coord+3);
+        
+        int dimension = CGAL::Feature_dimension<Point, K>::value;
+        assert(dimension == 0);
+        
+    }
+    
+    Min_sphere  ms (P, P+3);             // smallest enclosing sphere
+    double  radius = sqrt(ms.squared_radius());
+    std::cout << "   radius: " << radius << " " ;
+ //   CGAL::set_pretty_mode (std::cout);
+ //   std::cout << ms1;                     // output the sphere
+    
+    
+    
+    return
+        sqrt(ms.squared_radius())<0.9;   //check the fragment is not too big
+    
+}

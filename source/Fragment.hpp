@@ -60,7 +60,9 @@ private:
     //stores the points of the planar polygons close and far from the centre
     std::vector<glm::vec3> closeplanepoints;
     std::vector<glm::vec3> farplanepoints;
-    
+    double maxdistancecentroidfragment;
+    glm::vec3 maxdistancecentroidfragmentvertex;
+
 
     static const double  epsilon;
 
