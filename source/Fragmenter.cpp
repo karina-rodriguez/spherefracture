@@ -615,7 +615,7 @@ bool  spherePolyInsideTest(const std::vector<glm::vec3> &poly, const glm::vec3 &
     auto  pt = glm::normalize(point);  // paranoia
     
     for (int i=0; i<(int)pl.size(); ++i)
-        pl[i] = glm::normalize(pl[i] - dot(pt, pl[i]) * pt);  // project into plane orthogonal to pt, then normalise
+        pl[i] = pl[i] - dot(pt, pl[i]) * pt;  // project into plane orthogonal to pt
     
     double  sum = 0.0;
     for (int i=0; i<(int)pl.size(); ++i) {
