@@ -1,5 +1,7 @@
 #include "Geometry.hpp"
 
+
+
 Geometry::Geometry(GLuint vertexarrayID, glm::vec3 colour, GLenum primitive, geo_type type): vertexArrayID(vertexArrayID), colour(colour), primitive(primitive), type(type){
 	transformation = glm::mat4(1.0);
 	bbtransformation = glm::mat4(1.0);
@@ -204,6 +206,7 @@ int Geometry::exportPoints(){
     return 0;
     return EXIT_SUCCESS;
  */
+    
 }
 GLenum Geometry::getPrimitive(){
     return primitive;

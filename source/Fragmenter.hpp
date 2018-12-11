@@ -4,6 +4,20 @@
 #include "View.hpp"
 #include "Fragment.hpp"
 
+
+#include <CGAL/Cartesian_d.h>
+#include <cstdlib>
+#include <CGAL/Min_sphere_annulus_d_traits_d.h>
+#include <CGAL/Min_sphere_d.h>
+#include <CGAL/Min_sphere_of_spheres_d.h>
+
+typedef CGAL::Cartesian_d<double>              K;
+typedef CGAL::Min_sphere_annulus_d_traits_d<K> Traits;
+typedef CGAL::Min_sphere_d<Traits>             Min_sphere;
+typedef K::Point_d                             Point;
+
+
+
 class Fragmenter {
 
 public:
@@ -42,11 +56,13 @@ public:
     int testIntersections(std::vector<glm::vec3> jline);
     int testFragment(std::vector<glm::vec3> jline);
     void listAllFragments();
+    int createPolytope();
         
     
     static bool  computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2,glm::vec3& intersectionpoint);
+    static bool checkFragmentSizeSuitable(const std::vector<glm::vec3> poly);
     
-
+    
     // Tim's implementation:
     bool  tryCut(const std::vector<glm::vec3> &fragment,
                  const std::vector<glm::vec3> &fracture,

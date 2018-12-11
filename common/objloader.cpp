@@ -7,6 +7,10 @@
 #include <glm/glm.hpp>
 
 #include "objloader.hpp"
+#include <assimp/IOSystem.hpp>
+#include <assimp/Exporter.hpp>
+
+
 
 // Very, VERY simple OBJ loader.
 // Here is a short list of features a real function would provide : 
@@ -326,4 +330,127 @@ bool loadAssImp(
 	return true;
 }
 
+bool exportScene( const std::string& pFile,
+                 std::vector<glm::vec3> thevertices,
+                 const std::vector<glm::vec3> thenormals,
+                 const std::vector<int> theindices)
+{
+    
+    
+    aiScene scene;
+    scene.mRootNode = new aiNode();
+    
+    //material
+    scene.mMaterials = new aiMaterial*[ 1 ];
+    scene.mMaterials[ 0 ] = nullptr;
+    scene.mNumMaterials = 1;
+    scene.mMaterials[ 0 ] = new aiMaterial();
+    
+    
+    scene.mMeshes = new aiMesh*[ 1 ];
+    scene.mMeshes[ 0 ] = nullptr;
+    scene.mNumMeshes = 1;
+    
+    scene.mMeshes[ 0 ] = new aiMesh();
+    scene.mMeshes[ 0 ]->mMaterialIndex = 0;
+    
+    scene.mRootNode->mMeshes = new unsigned int[ 1 ];
+    scene.mRootNode->mMeshes[ 0 ] = 0;
+    scene.mRootNode->mNumMeshes = 1;
+    
+    auto pMesh = scene.mMeshes[ 0 ];
+    
+    
+    pMesh->mVertices = new aiVector3D[ thevertices.size() ];
+    pMesh->mNormals = new aiVector3D[ thevertices.size() ];
+
+    pMesh->mNumVertices = thevertices.size();
+    int j = 0;
+    for ( auto itr = thevertices.begin(); itr != thevertices.end(); ++itr )
+    {
+
+        pMesh->mVertices[ itr - thevertices.begin() ] = aiVector3D(thevertices[j].x, thevertices[j].y, thevertices[j].z );
+        
+
+        pMesh->mNormals[ itr - thevertices.begin() ] = aiVector3D( thenormals[j].x, thenormals[j].y, thenormals[j].z );
+  //      pMesh->mTextureCoords[0][ itr - vVertices.begin() ] = aiVector3D( uvs[j].x, uvs[j].y, 0 );
+    }
+    
+   
+    
+
+    pMesh->mFaces = new aiFace[ thevertices.size() / 3 ];
+    pMesh->mNumFaces = (unsigned int)(thevertices.size() / 3);
+    
+    
+    int k = 0;
+    for(int i = 0; i < (thevertices.size() / 3); i++)
+    {
+       
+
+        aiFace &face = pMesh->mFaces[i];
+
+        face.mIndices = new unsigned int[3];
+        face.mNumIndices = 3;
+        
+        face.mIndices[0] = k;
+        face.mIndices[1] = k+1;
+        face.mIndices[2] = k+2;
+        k = k + 3;
+        
+        
+
+    }
+
+    
+
+    
+    
+    
+    Assimp::Exporter* exp;
+    exp = new Assimp::Exporter();
+    const char* id = "stl";
+    
+    exp->Export(&scene, id, pFile);
+
+    return 1;
+}
+bool myOwnExportSceneSTL( const std::string& pFile,
+                 std::vector<glm::vec3> thevertices,
+                 const std::vector<glm::vec3> thenormals)
+{
+    
+    std::ofstream myfile;
+    myfile.open (pFile);
+    //start the file
+    myfile << "solid fragmentGeometry\n";
+    
+    int k = 0;
+    for(int i = 0; i < (thevertices.size() / 3); i++)
+    {
+        glm::vec3 pos0 = thevertices[k];
+        glm::vec3 pos1 = thevertices[k+1];
+        glm::vec3 pos2 = thevertices[k+2];
+        glm::vec3 norm = thenormals[k];
+        
+        
+        myfile << "facet normal " << norm.x << " " << norm.y << " " << norm.z << "\n";
+        myfile << "outer loop\n";
+        myfile << "vertex " << pos0.x << " " << pos0.y << " " << pos0.z << "\n";
+        myfile << "vertex " << pos1.x << " " << pos1.y << " " << pos1.z << "\n";
+        myfile << "vertex " << pos2.x << " " << pos2.y << " " << pos2.z << "\n";
+
+        myfile << "end loop\n";
+        myfile << "end factet\n";
+        k = k+3;
+        
+    }
+    
+    //end the file
+    myfile << "solid fragmentGeometry\n";
+    
+    myfile.close();
+    
+    return 1;
+}
 #endif

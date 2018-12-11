@@ -57,7 +57,7 @@ View::View(int width, int height):width(width),height(height){
     counter = 0;
     FOV = 45;
     min = glm::vec3(std::numeric_limits<float>::max(),std::numeric_limits<float>::max(),std::numeric_limits<float>::max());
-    max = glm::vec3(std::numeric_limits<float>::min(),std::numeric_limits<float>::min(),std::numeric_limits<float>::min());
+    max = glm::vec3(0,0,0);
     glfwSetWindowPos(window, 0, 0);
 
 }
@@ -103,51 +103,46 @@ void View::update() {
            Geometry* mygeo = *it;
             if (mygeo->isVisible()){
 
-            /////////***************************************
-            /////////************FIRST VIEWPORT***********
-            /////////***************************************
-            glViewport(0, 0, width*2, height*2);
-
             float space=0.1;
-            computeMatricesFromInputs(window, width, height,FOV,min.x-space,max.x+space,min.y-space,max.y+space);
+          //  computeMatricesFromInputs(window, width, height,FOV,min.x-space,max.x+space,min.y-space,max.y+space);
 
             //computeMatricesFromInputs(<#GLFWwindow *window#>, <#int width#>, <#int height#>)
             //********Calculate the MVP matrix
             //***********PROJECTION*****************
-            glm::mat4 Projection = getProjectionMatrix();
-         //   glm::perspective(glm::radians(FOV), 1.0f / 1.0f, 0.1f, 100.0f);
-            //getProjectionMatrix();
+           glm::mat4 Projection = glm::ortho(min.x-space,max.x+space,min.y-space,max.y+space,0.0f,200.0f);
+                
+           // glm::mat4 Projection = glm::ortho(min.x-space,max.x+space,min.y-space,max.y+space,0.0f,200.0f);
+
             //***********CAMERA*****************
             // Camera matrix
             
-            glm::vec3 cameraPosition(boundingboxcentre.x, boundingboxcentre.y, distancez*15);
-            
+                
+          //  std::cout << "position " << getPosition().x << ", " << getPosition().y << ", " << getPosition().z << std::endl;
+            camposition = glm::vec3(boundingboxcentre.x, boundingboxcentre.y, distancez);
+               // camposition = glm::vec3(0,0,0);
+
+                getMouseRotation();
             glm::mat4 camera = glm::lookAt(
-                                         glm::vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z), // Camera is at (0,0,-1), in World Space
-                                         //glm::vec3(0, 0, 2),
-                                         glm::vec3(boundingboxcentre.x, boundingboxcentre.y, boundingboxcentre.z), // and looks at the origin
-                                         glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
+                                         //-glm::vec3(camposition.x, camposition.y, camposition.z), // Camera is at (0,0,-1), in World Space
+                                           glm::vec3(camposition.x, camposition.y, camposition.z), // Camera is at (0,0,-1), in World Space
+                                           
+                                        glm::vec3(0,0,0), // and looks at the origin
+                                         glm::vec3(0, 1, 0)
                                          );
-            glm::mat4 View = camera * getViewMatrix();
+                glm::mat4 camera1 = glm::lookAt(
+                                               glm::vec3(0,0,0), // Camera is at (0,0,-1), in World Space
+                                               direction, // and looks at the origin
+                                               glm::vec3(0, 1, 0)
+                                               );
+                glm::mat4 View = camera * camera1; //* getViewMatrix();
+            
             //***********MODEL*****************
-           // glm::mat4 Model = glm::rotate((float)counter,glm::vec3(0.0,1.0,0.0));
-            //counter+=0.01;
-            //glm::scale(glm::vec3(0.05,0.05,0.05));
             glm::mat4 Model = glm::mat4(1.0);//glm::rotate((float)90.0,glm::vec3(0.0,1.0,0.0));//glm::mat4(1.0);
             
             glm::mat4 mvp = Projection * View * Model;
             
             
             glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
-      //      glUniformMatrix4fv(ModelID, 1, GL_FALSE, &View[0][0]);
-       //     glUniformMatrix4fv(ViewID, 1, GL_FALSE, &View[0][0]);
-
-         //   glUniform3f(LightID, lightPosition.x, lightPosition.y, lightPosition.z);
-//            glUniform3f(CameraID, cameraPosition.x, cameraPosition.y, cameraPosition.z);
-
-        
-
-            
             
             //********Add the Geometry
             // 1rst attribute buffer : vertices
@@ -227,6 +222,9 @@ GLuint View::getVertexArrayID(){
     return VertexArrayID;
 }
 void View::calculateMaxBoundingBox(){
+    distancez=0;
+    glm::vec3 minbb(0,0,0);
+    glm::vec3 maxbb(1000,1000,1000);
     for (std::vector<Geometry*>::iterator it = geometries.begin() ; it != geometries.end(); ++it){
         Geometry* mygeo = *it;
         glm::vec3 ming = mygeo->getBoundingBoxMin();
@@ -234,27 +232,34 @@ void View::calculateMaxBoundingBox(){
         
         if (ming.x<min.x) min.x = ming.x;
         if (ming.y<min.y) min.y = ming.y;
+        if (ming.z<min.z) min.z = ming.z;
+        
         if (maxg.x>max.x) max.x = maxg.x;
         if (maxg.y>max.y) max.y = maxg.y;
-        //calculate the ideal camera position
-        glm::vec3 boundingboxcentreg;
-        boundingboxcentreg.x = (ming.x + maxg.x)/2;
-        float distx = maxg.x-ming.x;
-        boundingboxcentreg.y = (ming.y + maxg.y)/2;
-        float disty = maxg.y-ming.y;
-        float distz = maxg.z-ming.z;
-        
-        boundingboxcentreg.z = (ming.z + maxg.z)/2;
-        boundingboxcentre = boundingboxcentreg;
-        float diagonalg = sqrt(pow(distx,2)+pow(disty,2)+pow(distz,2));
-        
-        // float distancez = diagonal/(atan(2*glm::radians(FOV/2)));
-        //use alternative XY plane
-        distancez = diagonalg/(atan(2*glm::radians(FOV/2)));
-        //glm::mat4 Projection = glm::ortho(-10.0f,10.0f,-10.0f,10.0f,0.0f,100.0f); // In world coordinates
-        //left right bottom top
+        if (maxg.z>max.z) max.z = maxg.z;
         
     }
+    
+    //std::cout << "min " << min.x << ", " << min.y << ", " << min.z << std::endl;
+    //std::cout << "max " << max.x << ", " << max.y << ", " << max.z << std::endl;
+
+    //calculate the ideal camera position
+    //X Y are just in the centre of the camera
+    boundingboxcentre.x = (min.x + max.x)/2;
+    boundingboxcentre.y = (min.y + max.y)/2;
+    boundingboxcentre.z = (min.z + max.z)/2;
+
+
+    float distx = max.x-min.x;
+    float disty = max.y-min.y;
+    float diagonalg = sqrt(pow(distx,2)+pow(disty,2));
+    
+    // float distancez = diagonal/(atan(2*glm::radians(FOV/2)));
+    //use alternative XY plane
+    distancez = diagonalg/(atan(2*glm::radians(FOV/2)));
+    std::cout << "distancez " << distancez << std::endl;
+
+    
 }
 void View::changeVisibility(){
 
@@ -326,5 +331,80 @@ void View::changeVisibility(){
         }
         oldState1 = newState1;
         
+    
+}
+void View::getMouseRotation(){
+    // glfwGetTime is called only once, the first time this function is called
+    static double lastTime = glfwGetTime();
+    
+    // Compute time difference between current and last frame
+    double currentTime = glfwGetTime();
+    float deltaTime = float(currentTime - lastTime);
+    
+    
+    // Get mouse position
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    
+    // Reset mouse position for next frame
+    glfwSetCursorPos(window, width / 2, height / 2);
+    //std::cout << "****************** " << std::endl;
+    
+//    std::cout << "mouseSpeed: " <<  mouseSpeed << std::endl;
+    
+    // Compute new orientation
+    horizontalAngle += mouseSpeed * float(width/2 - xpos );
+    verticalAngle   += mouseSpeed * float(height/2 - ypos );
+    
+    //std::cout << "changes: " << (width / 2 - xpos) << ", " << (height / 2 - ypos) << std::endl;
+    //std::cout << "horizontalAngle: " << horizontalAngle << std::endl;
+    //std::cout << "verticalAngle: " << verticalAngle << std::endl;
+    
+    
+    // Direction : Spherical coordinates to Cartesian coordinates conversion
+    direction =glm::vec3(
+                         cos(verticalAngle) * sin(horizontalAngle),
+                         sin(verticalAngle),
+                         cos(verticalAngle) * cos(horizontalAngle)
+                         );
+    //    std::cout << "direction: " << direction.x << ", " << direction.y << ", " <<
+    //    direction.z << std::endl;
+    
+    // Right vector
+    glm::vec3 right = glm::vec3(
+                                sin(horizontalAngle - 3.14f/2.0f),
+                                0,
+                                cos(horizontalAngle - 3.14f/2.0f)
+                                );
+    //std::cout << "right: " << right.x << ", " << right.y << ", " <<
+    //    right.z << std::endl;
+    
+    // Up vector
+    glm::vec3 up = glm::cross( right, direction );
+    //std::cout << "position inital: " << position.x << ", " << position.y << ", " << position.z << std::endl;
+    
+    // Move forward
+    if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
+        camposition += direction * deltaTime * speed;
+    }
+    // Move backward
+    if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
+        camposition -= direction * deltaTime * speed;
+    }
+    // Strafe right
+    if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
+        camposition += right * deltaTime * speed;
+    }
+    // Strafe left
+    if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
+        camposition -= right * deltaTime * speed;
+    }
+  //  std::cout << "position after changes: " << camposition.x << ", " << camposition.y << ", " << camposition.z << std::endl;
+    
+//std::cout << "position after changes: " << direction.x << ", " << direction.y << ", " << direction.z << std::endl;
+    
+        
+    // For the next frame, the "last time" will be "now"
+    lastTime = currentTime;
     
 }

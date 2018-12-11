@@ -12,7 +12,7 @@
 
 //For pointset in CGAL
 /*#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Point_set_3.h>
+//#include <CGAL/Point_set_3.h>
 #include <CGAL/Point_set_3/IO.h>
 #include <fstream>
 #include <limits>
@@ -26,6 +26,8 @@ typedef CGAL::Point_set_3<Point> Point_set;
 typedef Point_set::Property_map<Color> Color_map;
 typedef Point_set::Property_map<FT> FT_map;*/
 enum geo_type { GEO_SHAPE, GEO_FRAGMENT, GEO_INTERSECTION, GEO_PATH };
+
+
 
 class Geometry {
     

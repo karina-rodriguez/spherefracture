@@ -15,7 +15,7 @@ set (CMAKE_CXX_STANDARD 11)
 #if ( NOT CGAL_FOUND )
 
 #  message(STATUS "This project requires the CGAL library, and will not be compiled.")
-#  return()  
+#  return()
 
 #endif()
 
@@ -59,6 +59,7 @@ include_directories(
 	external/glfw-3.1.2/include/GLFW/
 	external/glm-0.9.7.1/
 	external/glew-1.13.0/include/
+    external/assimp-3.0.1270/include/
 	.
 )
 
@@ -95,21 +96,17 @@ add_executable(breakSphere
 	source/Fragmenter.hpp
 	source/SimpleFragmentShader.hlsl
 	source/SimpleVertexShader.hlsl
-	common/controls.cpp
-	common/controls.hpp
-	common/shader.cpp
+	common/objloader.cpp
+    common/objloader.hpp
+    common/shader.cpp
 	common/shader.hpp
-	common/texture.cpp
-	common/texture.hpp
-	common/vboindexer.cpp
-	common/vboindexer.hpp
 )
 
 # working directories
 set_target_properties(breakSphere PROPERTIES COMPILE_DEFINITIONS "USE_ASSIMP")
 target_link_libraries(breakSphere
 	${ALL_LIBS}
-#	${CGAL_LIBRARIES} 
+#	${CGAL_LIBRARIES}
 #	${CGAL_3RD_PARTY_LIBRARIES}
 	assimp
 )

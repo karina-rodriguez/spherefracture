@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 
 
@@ -52,6 +53,15 @@ bool loadAssImp(
 	std::vector<glm::vec2> & uvs,
 	std::vector<glm::vec3> & normals
 );
+
+bool exportScene( const std::string& pFile,
+                 const std::vector<glm::vec3> thevertices,
+                 const std::vector<glm::vec3> thenormals,
+                 const std::vector<int> theindices);
+
+bool myOwnExportSceneSTL( const std::string& pFile,
+                         std::vector<glm::vec3> thevertices,
+                         const std::vector<glm::vec3> thenormals);
 
 
 

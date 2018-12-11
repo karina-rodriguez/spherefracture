@@ -9,12 +9,8 @@
 // Include GLM
 #include <glm/glm.hpp>
 using namespace glm;
-#include "common/objloader.hpp"
-#include "common/vboindexer.hpp"
 #include <glm/gtx/transform.hpp>
 #include "common/shader.hpp"
-#include "common/controls.hpp"
-#include "common/text2D.hpp"
 #include "Geometry.hpp"
 
 class View {
@@ -25,10 +21,7 @@ private:
     GLuint programID;
     GLuint VertexArrayID;
     GLuint MatrixID;
-    GLuint ModelID;
-    GLuint ViewID;
-    GLuint LightID;
-    GLuint CameraID;
+
 
     //screen size
     int width;
@@ -43,6 +36,20 @@ private:
     glm::vec3 max;
     float distancez;
 
+    // Initial position : on +Z
+    // Initial horizontal angle : toward -Z
+    float horizontalAngle = 0.0f;
+    // Initial vertical angle : none
+    float verticalAngle = 0.0f;
+    // Initial Field of View
+    float initialFoV = 45.0f;
+    
+    float speed = 3.0f; // 3 units / second
+    float mouseSpeed = 0.005f;
+    glm::vec3 camposition = glm::vec3( 0, 0, 0);
+    glm::vec3 direction  = glm::vec3( 0, 0, 0);
+    
+    
     
 public:
     GLFWwindow* window;
@@ -54,6 +61,7 @@ public:
     GLuint getVertexArrayID();
     void update();
     void addGeometry(Geometry* mygeo);
+    void getMouseRotation();
 
     std::vector<Geometry*> getGeometries();
     void changeVisibility();

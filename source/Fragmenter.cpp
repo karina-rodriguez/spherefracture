@@ -1,5 +1,4 @@
 #include "Fragmenter.hpp"
-#include "Fragment.hpp"
 
 #include <assert.h>
 
@@ -12,6 +11,8 @@ Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
     4, 6, 0.4, 0.4/2.5, 0.9
 #endif
 };
+
+
 
 //////////////////////////////////////////////////////////////////////////////
 // Helpers
@@ -73,7 +74,7 @@ Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double dens
     //seed two initial parts to fragment
     Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::vec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,fracture);
     fragment0->calculateBoundingBox();
-    view->addGeometry(fragment0);
+   // view->addGeometry(fragment0);
     fragments.push(fragment0);
     actualparts++;
     
@@ -103,10 +104,12 @@ int Fragmenter::fragment(){
 
         
     
-        
+
         //try this cut and if it works add the two parts
         if( tryCut(fragments.front()->getVertices(), spherePolyRandomFracture(), result1,result2)){
-            //remove the last fragment on the queue as we have now deal with this
+            //remove the last fragment on the queue as we have now dealt with this
+            
+
             fragments.pop();
             //display the fragments on screen
             glm::vec3 colorran = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
@@ -115,15 +118,24 @@ int Fragmenter::fragment(){
             //create the two new fragments
             Fragment* newfrag1 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result1);
             fragments.push(newfrag1);
+            
+
 
             Fragment* newfrag2 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result2);
             fragments.push(newfrag2);
             actualparts+=1;
+            
+
         }
         
     }
+
+    listAllFragments();
+
+    createPolytope();
+
+
     
-     listAllFragments();
     return 1;
 }
 
@@ -136,10 +148,7 @@ int Fragmenter::testIntersections(std::vector<glm::vec3> jline){
     int curPoly = 0; // then one you’re “sitting on” while intersecting with the other
     int idx[2] = {0,0};
     
-    int index =0;
     int sizepoly1 = polys[0].size();
-    std::vector<glm::vec3>::iterator itr0 = polys[0].begin();
-    glm::vec3 polyinitial = *itr0;
     
     //std::cout <<  jline->getNumSteps() << std::endl;
     // compute intersections
@@ -258,11 +267,28 @@ int Fragmenter::testFragment(std::vector<glm::vec3> jline)
     return 0;
 }
 
+int Fragmenter::createPolytope(){
+    std::queue<Fragment*> tmpqueue = fragments;
+    
+    int counterfile=0;
+    while (!tmpqueue.empty())
+    {
+        Fragment* fragment = tmpqueue.front();
+        fragment->createSTLwithlargecones(counterfile++);
+        tmpqueue.pop();
+
+    }
+    return 1;
+    
+
+}
+
 void Fragmenter::listAllFragments(){
     std::queue<Fragment*> tmpqueue = fragments;
     while (!tmpqueue.empty())
     {
         view->addGeometry(tmpqueue.front());
+
         tmpqueue.pop();
         
     }
@@ -343,12 +369,23 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
     //std::cout << "FRAGMENT: " << str(fragment) << std::endl;
     //std::cout << "FRACTURE: " << str(fracture) << std::endl;
     
+    
+       // std::cout << (fragments.size()>4)&&(checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2))){
+
+        
     double  originalArea = spherePolyArea(fragment);
     std::cout << "originalArea " << originalArea << std::endl;
 
     if (spherePolyIntersect(fragment, fracture, result1)) {
+        
+
+        
         std::vector<glm::vec3>  revFracture(fracture.rbegin(), fracture.rend());
         if (spherePolyIntersect(fragment, revFracture, result2)) {
+            
+//((fragments.size()>4)&&(checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2))) &&
+
+            
             double  area1 = spherePolyArea(result1);
             std::cout << "area1 " << area1 << std::endl;
 
@@ -362,12 +399,22 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
             std::cout << "relAreaErr " << relAreaErr << std::endl;
 
 //            std::cout << "result: " << (relAreaErr < 0.001 &&  std::max(area1 / area2, area2 / area1) < 4.0) << std::endl;
-            return
-                relAreaErr < 1e-5 &&                                       // single pieces, please
-                             std::max(area1 / area2, area2 / area1) < 4.0;  // maximum area ratio
+            
+            //std::cout << "eval : " << fragments.size() << " " << (fragments.size()>1) << " " << checkFragmentSizeSuitable(result1) << " " << checkFragmentSizeSuitable(result2) << std::endl;
+
+            
+            
+            
+                if (relAreaErr < 1e-5 &&                                       // single pieces, please
+                             std::max(area1 / area2, area2 / area1) < 4.0)  // maximum area ratio
+            
+                    return
+                    ((fragments.size()>1) && (checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2))); // pieces of radius less than 0.9
+            
         }
     }
     return false;
+    
 }
 
 // spherePolyRandomFracture produces spherical polygon of m * 2^niter points.
@@ -578,4 +625,33 @@ bool  spherePolyInsideTest(const std::vector<glm::vec3> &poly, const glm::vec3 &
     return floor(0.5 + sum / (2*M_PI)) > 0;
 }
 
-//////////////////////////////////////////////////////////////////////////////
+bool Fragmenter::checkFragmentSizeSuitable(const std::vector<glm::vec3> poly){
+    
+    //min sphere for
+    Point  P[poly.size()];
+    double coord[3];
+    for (int n=0;n<poly.size();n++){
+      //  std::cout << "Point: " << (double)poly[n].x << ", " << (double)poly[n].y << ", " << (double)poly[n].z << std::endl;
+        
+        coord[0] = (double)poly[n].x;
+        coord[1] = (double)poly[n].y;
+        coord[2] = (double)poly[n].z;
+        P[n] = Point(3, coord,coord+3);
+        
+        int dimension = CGAL::Feature_dimension<Point, K>::value;
+        assert(dimension == 0);
+        
+    }
+    
+    Min_sphere  ms (P, P+3);             // smallest enclosing sphere
+    double  radius = sqrt(ms.squared_radius());
+    std::cout << "   radius: " << radius << " " ;
+ //   CGAL::set_pretty_mode (std::cout);
+ //   std::cout << ms1;                     // output the sphere
+    
+    
+    
+    return
+        sqrt(ms.squared_radius())<0.9;   //check the fragment is not too big
+    
+}
