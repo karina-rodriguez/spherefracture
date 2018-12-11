@@ -13,6 +13,9 @@ if success
         totalArea = area1 + area2;
         
         relAreaErr = 2.0 * abs(totalArea - originalArea) ./ (totalArea + originalArea);
+        if relAreaErr < 0
+            keyboard;
+        end
         
         success = relAreaErr < 0.001 ...               % maximum relative error of split (to catch non-simple polygons)
             && max(area1 / area2, area2 / area1) < 4;  % maximum area ratio

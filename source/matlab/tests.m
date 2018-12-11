@@ -3,14 +3,28 @@ function tests
 close all;
 %fractaltest;
 
-pool = { spherePolyRandomFracture() };
-%pool = { [ 1, 0, -1, 0; 0, 1, 0, -1; 0, 0, 0, 0 ] };
-pool{1} = pool{1} + 0.01*(2*rand(size(pool{1}))-1);
-
-pool{end+1} = fliplr(pool{1});
-plotPool(pool);
-
+if 0
+    if 1
+        pool = { spherePolyRandomFracture() };
+    else
+        %pool = { [ 1, 0, -1, 0; 0, 1, 0, -1; 0, 0, 0, 0 ] };
+        pool{1} = pool{1} + 0.01*(2*rand(size(pool{1}))-1);
+    end
+else
+    start_poly = load('debug_start_poly_1.mat');
+    pool = { start_poly.poly };
+    clear start_poly;
+end
 if 1
+    poly = pool{1};
+    save('latest_start_poly.mat', 'poly');
+    clear poly;
+end
+
+%pool{end+1} = fliplr(pool{1});
+plotPool(pool);
+return;
+if 0
     %fracture = spherePolyRandomFracture();
     fracture = pool{1}([2,3,1],:);
     
@@ -51,6 +65,12 @@ while numel(pool) < 10
         pool{idx} = result1;
         pool{end+1} = result2;
         %plotPool(pool);
+    end
+end
+
+if 0
+    for i=1:numel(pool)
+        pool{i} = spherePolyOffset(pool{i}, -1.0 * (pi/180));
     end
 end
 plotPool(pool);
