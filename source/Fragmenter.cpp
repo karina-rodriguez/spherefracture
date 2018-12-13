@@ -3,6 +3,7 @@
 #include <assert.h>
 
 const double  Fragmenter::epsilon = 1e-6;
+const int Fragmenter::evalPoints = 2;
 
 Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
 #if 0
@@ -12,6 +13,40 @@ Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
 #endif
 };
 
+
+//pointspart1= [[-100,-200,100],[-100,-200,200],[-50,-300,100],[-20,-200,150],[-200,-200,100],[-130,-200,50]];
+//pointspart21= [[-300,-50,-100],[-300,-67,-300],[-300,-100,-50],[-300,-150,-250],[-900,-700,-300]];
+//pointspart22 = [[-150,70,-100],[-300,0,-300],[-500,100,-250],[-300,100,-400],[-200,150,-300]];
+//pointspart31=[[0,200,-50],[-120,550,-50],[-250,400,-200],[-200,400,100],[-100,500,-300]];
+//pointspart32=[[0,800,200],[-200,600,0],[150,600,0],[400,700,100],[300,700,-300],[0,700,-300]];
+//pointspart4=[[50,-180,50],[45,-200,-50],[-80,-300,0],[0,-300,0],[-40,-250,-50]];
+//pointspart5=[[400,0,500], [400,-350,550], [400,200,500], [400,0,250], [400,150,250], [400,-200,250]];
+//pointspart6=[[250,-300,-100],[250,-150,40],[120,-150,40],[190,-150,-20],[190,-150,-80]];
+//pointspart7=[[-500,50,600], [-800,200,700],[-600,-180,600], [-800,0,600], [-600,-100,500]];
+//pointspart8=[[-500,-50,100],[-500,200,200],[-400,300,100],[-500,100,00],[-800,400,-100],[-800,800,-100]];
+//pointspart9=[[500,200,0],[250,0,0],[150,-50,-100],[150,10,-150],[250,150,-150],[300,0,-100]];
+//pointspart10=[[100,300,400], [-300,400,600], [0,500,400], [-100,500,500], [200,300,300], [-400,900,700]];
+
+static std::vector<glm::vec3> p1 ={glm::vec3(-100,-200,100),glm::vec3(-100,-200,200),glm::vec3(-50,-300,100),glm::vec3(-20,-200,150),glm::vec3(-200,-200,100),glm::vec3(-130,-200,50)};
+static std::vector<glm::vec3> p2 ={glm::vec3(-300,-50,-100),glm::vec3(-300,-67,-300),glm::vec3(-300,-100,-5),glm::vec3(-300,-150,-250),glm::vec3(-900,-700,-300)};
+static std::vector<glm::vec3> p3 ={glm::vec3(-150,70,-100),glm::vec3(-300,0,-300),glm::vec3(-500,100,-250),glm::vec3(-300,100,-400),glm::vec3(-200,150,-300)};
+static std::vector<glm::vec3> p4 ={glm::vec3(0,200,-50),glm::vec3(-120,550,-50),glm::vec3(-250,400,-200),glm::vec3(-200,400,100),glm::vec3(-100,500,-300)};
+static std::vector<glm::vec3> p5 ={glm::vec3(0,800,200),glm::vec3(-200,600,0),glm::vec3(150,600,0),glm::vec3(400,700,100),glm::vec3(300,700,-300),glm::vec3(0,700,-300)};
+static std::vector<glm::vec3> p6 ={glm::vec3(50,-180,50),glm::vec3(45,-200,-50),glm::vec3(-80,-300,0),glm::vec3(0,-300,0),glm::vec3(-40,-250,-50)};
+static std::vector<glm::vec3> p7 ={glm::vec3(400,0,500), glm::vec3(400,-350,550), glm::vec3(400,200,500), glm::vec3(400,0,250), glm::vec3(400,150,250), glm::vec3(400,-200,250)};
+static std::vector<glm::vec3> p8 ={glm::vec3(250,-300,-100),glm::vec3(250,-150,40),glm::vec3(120,-150,40),glm::vec3(190,-150,-20),glm::vec3(190,-150,-80)};
+static std::vector<glm::vec3> p9 ={glm::vec3(-500,50,600), glm::vec3(-800,200,700),glm::vec3(-600,-180,600), glm::vec3(-800,0,600), glm::vec3(-600,-100,500)};
+static std::vector<glm::vec3> p10 ={glm::vec3(-500,-50,100),glm::vec3(-500,200,200),glm::vec3(-400,300,100),glm::vec3(-500,100,00),glm::vec3(-800,400,-100),glm::vec3(-800,800,-100)};
+static std::vector<glm::vec3> p11 ={glm::vec3(500,200,0),glm::vec3(250,0,0),glm::vec3(150,-50,-100),glm::vec3(150,10,-150),glm::vec3(250,150,-150),glm::vec3(300,0,-100)};
+static std::vector<glm::vec3> p12 ={glm::vec3(100,300,400), glm::vec3(-300,400,600), glm::vec3(0,500,400), glm::vec3(-100,500,500), glm::vec3(200,300,300), glm::vec3(-400,900,700)};
+
+std::vector<std::vector<glm::vec3>> Fragmenter::allPoints = {p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12};
+
+
+/*std::vector<Fragmenter::PointsMagnets> Fragmenter::allPoints = {
+    p1
+   // {glm::vec3(1,0,0), glm::vec3(1,0,0)}
+};*/
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -87,6 +122,8 @@ Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double dens
 //    view->addGeometry(fragment1);
     fragments.push(fragment1);
     actualparts++;
+    
+
     
    
 }
@@ -208,7 +245,7 @@ int Fragmenter::testIntersections(std::vector<glm::vec3> jline){
                 if
                 (computeIntersection(poly1p1, poly1p2, poly2p1, poly2p2,  intersectionpoint)){
                 
-                    std::cout << " I INTERSECT! " << std::endl;
+                   // std::cout << " I INTERSECT! " << std::endl;
                     std::vector<glm::vec3> frag1;
                     std::vector<glm::vec3> frag2;
                     std::vector<glm::vec3> frag3;
@@ -256,7 +293,7 @@ int Fragmenter::testFragment(std::vector<glm::vec3> jline)
     std::vector<glm::vec3> result2;
 
    // std::cout << "TESTS " << std::endl;
-    std::cout << tryCut(fragments.front()->getVertices(), jline, result,result2) << std::endl;
+    tryCut(fragments.front()->getVertices(), jline, result,result2);
 
     if (result.size()) {
         Fragment* fragment1 = new Fragment(view->getVertexArrayID(), glm::vec3(1.0,0.0,0.0),GL_LINE_STRIP,GEO_PATH,result);
@@ -370,8 +407,7 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
     //std::cout << "FRACTURE: " << str(fracture) << std::endl;
     
     
-       // std::cout << (fragments.size()>4)&&(checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2))){
-
+    
         
     double  originalArea = spherePolyArea(fragment);
     std::cout << "originalArea " << originalArea << std::endl;
@@ -383,7 +419,6 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
         std::vector<glm::vec3>  revFracture(fracture.rbegin(), fracture.rend());
         if (spherePolyIntersect(fragment, revFracture, result2)) {
             
-//((fragments.size()>4)&&(checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2))) &&
 
             
             double  area1 = spherePolyArea(result1);
@@ -398,18 +433,15 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
             double  relAreaErr = 2.0 * fabs(totalArea - originalArea) / (totalArea + originalArea);
             std::cout << "relAreaErr " << relAreaErr << std::endl;
 
-//            std::cout << "result: " << (relAreaErr < 0.001 &&  std::max(area1 / area2, area2 / area1) < 4.0) << std::endl;
-            
-            //std::cout << "eval : " << fragments.size() << " " << (fragments.size()>1) << " " << checkFragmentSizeSuitable(result1) << " " << checkFragmentSizeSuitable(result2) << std::endl;
-
-            
-            
-            
                 if (relAreaErr < 1e-5 &&                                       // single pieces, please
                              std::max(area1 / area2, area2 / area1) < 4.0)  // maximum area ratio
             
                     return
                     ((fragments.size()>1) && (checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2))); // pieces of radius less than 0.9
+          //  std::cout << " ---->> " << checkAtLeastPointsHitFragment(1,allPoints,result1) << " --- " << checkAtLeastPointsHitFragment(1,allPoints,result2) << std::endl;
+                   /* return
+                        (evalPoints) &&
+                        (checkAtLeastPointsHitFragment(1,allPoints,result1)||checkAtLeastPointsHitFragment(1,allPoints,result2));*/
             
         }
     }
@@ -609,9 +641,10 @@ double  Fragmenter::spherePolyAngle(const std::vector<glm::vec3> &poly, int idx)
 // outside in 50% of the cases. Leaving it as is for now, seeing that
 // in our applications false negatives are tolerable.
 //
-bool  spherePolyInsideTest(const std::vector<glm::vec3> &poly, const glm::vec3 &point)
+bool  Fragmenter::spherePolyInsideTest(const std::vector<glm::vec3> &poly, const glm::vec3 &point)
 {
     auto  pl = poly;                   // will be modified
+
     auto  pt = glm::normalize(point);  // paranoia
     
     for (int i=0; i<(int)pl.size(); ++i)
@@ -622,14 +655,23 @@ bool  spherePolyInsideTest(const std::vector<glm::vec3> &poly, const glm::vec3 &
         int  iSucc = (i+1) % (int)pl.size();
         sum += atan2(glm::dot(pt, glm::cross(pl[i], pl[iSucc])), glm::dot(pl[i], pl[iSucc]));
     }
+    
+   std::cout << "###### " << floor(0.5 + sum / (2*M_PI)) << std::endl;
     return floor(0.5 + sum / (2*M_PI)) > 0;
 }
 
 bool Fragmenter::checkFragmentSizeSuitable(const std::vector<glm::vec3> poly){
     
+    
+    std::cout << "^^^^^^^^^^^^^^^^^^^^^^^"  << std::endl;
+
     //min sphere for
     Point  P[poly.size()];
     double coord[3];
+    
+    // Build also the points for the convex hull
+    std::vector<Point_3> points;
+
     for (int n=0;n<poly.size();n++){
       //  std::cout << "Point: " << (double)poly[n].x << ", " << (double)poly[n].y << ", " << (double)poly[n].z << std::endl;
         
@@ -641,17 +683,65 @@ bool Fragmenter::checkFragmentSizeSuitable(const std::vector<glm::vec3> poly){
         int dimension = CGAL::Feature_dimension<Point, K>::value;
         assert(dimension == 0);
         
+        points.push_back(Point_3(poly[n].x,poly[n].y,poly[n].z));
+
+        
     }
     
     Min_sphere  ms (P, P+3);             // smallest enclosing sphere
     double  radius = sqrt(ms.squared_radius());
     std::cout << "   radius: " << radius << " " ;
- //   CGAL::set_pretty_mode (std::cout);
- //   std::cout << ms1;                     // output the sphere
+    //   CGAL::set_pretty_mode (std::cout);
+    //   std::cout << ms1;
     
+    
+    //calculate the convex hull
+    Polyhedron_3 polyhedron;
+    
+    // compute convex hull of non-collinear points
+    CGAL::convex_hull_3(points.begin(), points.end(), polyhedron);
+    
+    
+    CGAL::Side_of_triangle_mesh<Polyhedron_3, EK> inside(polyhedron);
+  //  int nb_inside = 0;
+  //  CGAL::Bounded_side res = inside(Point_3(0,0,0));
+  //  if (res == CGAL::ON_BOUNDED_SIDE) { ++nb_inside; }
+    std::cout << (inside(Point_3(0,0,0))==CGAL::ON_BOUNDED_SIDE) << std::endl;
     
     
     return
-        sqrt(ms.squared_radius())<0.9;   //check the fragment is not too big
+    sqrt(ms.squared_radius())<0.9 &&      //check the fragment is not too big
+        (inside(Point_3(0,0,0))!=CGAL::ON_BOUNDED_SIDE);     //check the origin is not inside the fragment
     
 }
+bool Fragmenter::checkAtLeastPointsHitFragment(const int numpoints,const std::vector<std::vector<glm::vec3>> points,const std::vector<glm::vec3> poly){
+
+    for (int i=0;i<points.size();i++){
+        
+        std::vector<glm::vec3> pointsforFragment = points[i];
+        int numfound=0;
+        for (int j=0;j<pointsforFragment.size();j++){
+            std::cout << "**pos to check:***>>> " << pointsforFragment[j].x << ",  " << pointsforFragment[j].y << ", " << pointsforFragment[j].z ;
+
+            if (spherePolyInsideTest(poly, pointsforFragment[j])) numfound++;
+                if (numfound==numpoints) {
+                    std::cout << "******>>> " << i << " and " << j << std::endl;
+                    numfound++;
+                    removePointsForThisFragment(numfound);
+                    return 1;
+                }
+            
+        }
+        
+    }
+   
+    return 0;
+}
+                
+void Fragmenter::removePointsForThisFragment(const int elem){
+    
+    std::remove(allPoints.begin(), allPoints.end(), allPoints[elem]);
+    
+    
+}
+

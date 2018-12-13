@@ -10,11 +10,20 @@
 #include <CGAL/Min_sphere_annulus_d_traits_d.h>
 #include <CGAL/Min_sphere_d.h>
 #include <CGAL/Min_sphere_of_spheres_d.h>
-
 typedef CGAL::Cartesian_d<double>              K;
 typedef CGAL::Min_sphere_annulus_d_traits_d<K> Traits;
 typedef CGAL::Min_sphere_d<Traits>             Min_sphere;
 typedef K::Point_d                             Point;
+
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/convex_hull_3.h>
+#include <CGAL/Side_of_triangle_mesh.h>
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel  EK;
+typedef CGAL::Polyhedron_3<EK>                     Polyhedron_3;
+typedef EK::Point_3                                Point_3;
 
 
 
@@ -30,7 +39,8 @@ public:
     };
 
     static RandomFractureOptions  defaultRandomFractureOptions;
-    
+    static std::vector<std::vector<glm::vec3>> allPoints;
+
 private:
     int radius;
     int numparts;
@@ -41,8 +51,11 @@ private:
     double densityline;
     double densitysphere;
     double maxpeak;
-    
+
+
     static const double  epsilon;
+    static const int evalPoints;
+
     static bool  epsilonSame(const glm::vec3 &a, const glm::vec3 &b, double epsilonScale=1.0);
     
     //set the fragment and its level
@@ -61,7 +74,9 @@ public:
     
     static bool  computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2,glm::vec3& intersectionpoint);
     static bool checkFragmentSizeSuitable(const std::vector<glm::vec3> poly);
-    
+    static bool checkAtLeastPointsHitFragment(const int numpoints,const std::vector<std::vector<glm::vec3>> points, const std::vector<glm::vec3> poly);
+    static void removePointsForThisFragment(const int elem);
+
     
     // Tim's implementation:
     bool  tryCut(const std::vector<glm::vec3> &fragment,
