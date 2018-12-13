@@ -1,36 +1,50 @@
-//intersection(){
-/*translate([-50,-70,100])
-scale(100)
+ module cutPuzzlePiece(a){
 
-%import("fragmentsphere/fragment_0.stl");
-%import("fragmentsphere/fragment_1.stl");
-%import("fragmentsphere/fragment_2.stl");
-%import("fragmentsphere/fragment_3.stl");
-%import("fragmentsphere/fragment_4.stl");
-%import("fragmentsphere/fragment_5.stl");
-%import("fragmentsphere/fragment_6.stl");
-rotate([-7,-30,10])
-        translate([10,0,-100])
-        
-        import("geometry/ambercuppoisson_100K.stl");*/
+ 
+ //for (a =[0:11]){
 
-//}
-
- for (a =[0:2]){
-
-
+      //  a=11;
+     
+     intersection(){
         name = str("fragmentsphere/fragment_", a, ".stl");
         scale(100)
 
-        %import(file=name, centre=true);
+        import(file=name, centre=true);
      
      
         rotate([-7,-30,10])
         translate([10,0,-110])
 
         import("geometry/ambercuppoisson_100K.stl");
+   }
+    
+ }
+ 
 
-    
-    
-    
-    }
+if (mode == 0) {
+     cutPuzzlePiece(0);
+}
+if (mode == 1) {
+     cutPuzzlePiece(1);
+} else if (mode == 2) {
+     cutPuzzlePiece(2);
+}else if (mode == 3) {
+     cutPuzzlePiece(3);
+}else if (mode == 4) {
+     cutPuzzlePiece(4);
+}else if (mode == 5) {
+     cutPuzzlePiece(5);
+}else if (mode == 6) {
+     cutPuzzlePiece(6);
+}else if (mode == 7) {
+     cutPuzzlePiece(7);
+}else if (mode == 8) {
+     cutPuzzlePiece(8);
+}else if (mode == 9) {
+     cutPuzzlePiece(9);
+}else if (mode == 10) {
+     cutPuzzlePiece(10);
+}else if (mode == 11) {
+     cutPuzzlePiece(11);
+
+} 

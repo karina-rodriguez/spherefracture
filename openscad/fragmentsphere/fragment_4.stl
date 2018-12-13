@@ -1,0 +1,114 @@
+solid fragmentGeometry
+facet normal 0.00273764 0.00305098 -0.015595
+outer loop
+vertex 1.87054 -3.51699 -0.363172
+vertex 0.467677 -0.878957 -0.0933404
+vertex 0.472335 -0.876598 -0.0920614
+end loop
+end factet
+facet normal 0.00985235 0.00352675 0.0164645
+outer loop
+vertex 1.87054 -3.51699 -0.363172
+vertex 0.472335 -0.876598 -0.0920614
+vertex 0.467622 -0.879475 -0.0886253
+end loop
+end factet
+facet normal 0.000896752 0.000160068 0.00304413
+outer loop
+vertex 1.87054 -3.51699 -0.363172
+vertex 0.467622 -0.879475 -0.0886253
+vertex 0.466734 -0.879975 -0.0883374
+end loop
+end factet
+facet normal -0.00095576 -0.000502616 -5.91278e-05
+outer loop
+vertex 1.87054 -3.51699 -0.363172
+vertex 0.466734 -0.879975 -0.0883374
+vertex 0.466736 -0.879938 -0.0886959
+end loop
+end factet
+facet normal -0.00443691 -0.00235254 -9.01222e-05
+outer loop
+vertex 1.87054 -3.51699 -0.363172
+vertex 0.466736 -0.879938 -0.0886959
+vertex 0.466693 -0.879791 -0.0903632
+end loop
+end factet
+facet normal -0.00466806 -0.00254491 0.000579596
+outer loop
+vertex 1.87054 -3.51699 -0.363172
+vertex 0.466693 -0.879791 -0.0903632
+vertex 0.466445 -0.879739 -0.0921279
+end loop
+end factet
+facet normal -0.00181675 -0.000826031 -0.00137424
+outer loop
+vertex 1.87054 -3.51699 -0.363172
+vertex 0.466445 -0.879739 -0.0921279
+vertex 0.466823 -0.87947 -0.0927891
+end loop
+end factet
+facet normal -0.00159264 -0.000542849 -0.00297308
+outer loop
+vertex 1.87054 -3.51699 -0.363172
+vertex 0.466823 -0.87947 -0.0927891
+vertex 0.467677 -0.878957 -0.0933404
+end loop
+end factet
+facet normal 0.000904039 0.00103289 -0.00519681
+outer loop
+vertex 0.467677 -0.878957 -0.0933404
+vertex 0 0 0
+vertex 0.472335 -0.876598 -0.0920614
+end loop
+end factet
+facet normal 0.00327687 0.00118913 0.00548971
+outer loop
+vertex 0.472335 -0.876598 -0.0920614
+vertex 0 0 0
+vertex 0.467622 -0.879475 -0.0886253
+end loop
+end factet
+facet normal 0.000297524 5.59352e-05 0.00101483
+outer loop
+vertex 0.467622 -0.879475 -0.0886253
+vertex 0 0 0
+vertex 0.466734 -0.879975 -0.0883374
+end loop
+end factet
+facet normal -0.000318795 -0.000167124 -1.96099e-05
+outer loop
+vertex 0.466734 -0.879975 -0.0883374
+vertex 0 0 0
+vertex 0.466736 -0.879938 -0.0886959
+end loop
+end factet
+facet normal -0.00148007 -0.000782065 -2.97427e-05
+outer loop
+vertex 0.466736 -0.879938 -0.0886959
+vertex 0 0 0
+vertex 0.466693 -0.879791 -0.0903632
+end loop
+end factet
+facet normal -0.0015573 -0.00084595 0.000193417
+outer loop
+vertex 0.466693 -0.879791 -0.0903632
+vertex 0 0 0
+vertex 0.466445 -0.879739 -0.0921279
+end loop
+end factet
+facet normal -0.000606485 -0.000273608 -0.000457942
+outer loop
+vertex 0.466445 -0.879739 -0.0921279
+vertex 0 0 0
+vertex 0.466823 -0.87947 -0.0927891
+end loop
+end factet
+facet normal 0.000532418 0.000178091 0.000990629
+outer loop
+vertex 0.466823 -0.87947 -0.0927891
+vertex 0 0 0
+vertex 0.467677 -0.878957 -0.0933404
+end loop
+end factet
+solid fragmentGeometry
