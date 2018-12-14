@@ -436,12 +436,12 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
                 if (relAreaErr < 1e-5 &&                                       // single pieces, please
                              std::max(area1 / area2, area2 / area1) < 4.0)  // maximum area ratio
             
-                    return
-                    ((fragments.size()>1) && (checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2))); // pieces of radius less than 0.9
+                    if
+                    ((fragments.size()>1) && (checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2))) // pieces of radius less than 0.9
           //  std::cout << " ---->> " << checkAtLeastPointsHitFragment(1,allPoints,result1) << " --- " << checkAtLeastPointsHitFragment(1,allPoints,result2) << std::endl;
-                   /* return
-                        (evalPoints) &&
-                        (checkAtLeastPointsHitFragment(1,allPoints,result1)||checkAtLeastPointsHitFragment(1,allPoints,result2));*/
+                    return
+                        /*(evalPoints) &&*/
+                        (checkAtLeastPointsHitFragment(1,allPoints,result1)||checkAtLeastPointsHitFragment(1,allPoints,result2));
             
         }
     }
