@@ -22,6 +22,7 @@ endif()
 # include helper file
 include( ${CGAL_USE_FILE} )
 
+
 # Boost and its components
 find_package( Boost REQUIRED )
 
