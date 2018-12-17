@@ -6,13 +6,26 @@
 #include <list>
 #include <fstream>
 #include "common/objloader.hpp"
-/*
+
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Partition_traits_2.h>
 #include <CGAL/partition_2.h>
 #include <CGAL/point_generators_2.h>
 #include <CGAL/random_polygon_2.h>
 #include <cassert>
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel EPK;
+typedef CGAL::Partition_traits_2<EPK>                       EPKTraits;
+typedef EPKTraits::Point_2                                  Point_2;
+typedef EPKTraits::Polygon_2                                Polygon_2;
+typedef Polygon_2::Vertex_iterator                          Vertex_iterator;
+typedef std::list<Polygon_2>                                Polygon_list;
+typedef CGAL::Creator_uniform_2<int, Point_2>               Creator;
+typedef CGAL::Random_points_in_square_2<Point_2, Creator>   Point_generator;
+typedef Polygon_2::Vertex_iterator VertexIterator;
+
+/*
+
 
 #include <CGAL/Point_set_3.h>
 //#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -24,15 +37,6 @@
 //#include <limits>
 
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef CGAL::Partition_traits_2<K>                         Traits;
-typedef Traits::Point_2                                     Point_2;
-typedef Traits::Polygon_2                                   Polygon_2;
-typedef Polygon_2::Vertex_iterator                          Vertex_iterator;
-typedef std::list<Polygon_2>                                Polygon_list;
-typedef CGAL::Creator_uniform_2<int, Point_2>               Creator;
-typedef CGAL::Random_points_in_square_2<Point_2, Creator>   Point_generator;
-typedef Polygon_2::Vertex_iterator VertexIterator;
 //For pointset in CGAL
 
  typedef K::FT FT;

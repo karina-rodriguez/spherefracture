@@ -18,6 +18,7 @@ Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
 //pointspart21= [[-300,-50,-100],[-300,-67,-300],[-300,-100,-50],[-300,-150,-250],[-900,-700,-300]];
 //pointspart22 = [[-150,70,-100],[-300,0,-300],[-500,100,-250],[-300,100,-400],[-200,150,-300]];
 //pointspart31=[[0,200,-50],[-120,550,-50],[-250,400,-200],[-200,400,100],[-100,500,-300]];
+
 //pointspart32=[[0,800,200],[-200,600,0],[150,600,0],[400,700,100],[300,700,-300],[0,700,-300]];
 //pointspart4=[[50,-180,50],[45,-200,-50],[-80,-300,0],[0,-300,0],[-40,-250,-50]];
 //pointspart5=[[400,0,500], [400,-350,550], [400,200,500], [400,0,250], [400,150,250], [400,-200,250]];
@@ -26,7 +27,6 @@ Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
 //pointspart8=[[-500,-50,100],[-500,200,200],[-400,300,100],[-500,100,00],[-800,400,-100],[-800,800,-100]];
 //pointspart9=[[500,200,0],[250,0,0],[150,-50,-100],[150,10,-150],[250,150,-150],[300,0,-100]];
 //pointspart10=[[100,300,400], [-300,400,600], [0,500,400], [-100,500,500], [200,300,300], [-400,900,700]];
-
 static std::vector<glm::vec3> p1 ={glm::vec3(-100,-200,100),glm::vec3(-100,-200,200),glm::vec3(-50,-300,100),glm::vec3(-20,-200,150),glm::vec3(-200,-200,100),glm::vec3(-130,-200,50)};
 static std::vector<glm::vec3> p2 ={glm::vec3(-300,-50,-100),glm::vec3(-300,-67,-300),glm::vec3(-300,-100,-5),glm::vec3(-300,-150,-250),glm::vec3(-900,-700,-300)};
 static std::vector<glm::vec3> p3 ={glm::vec3(-150,70,-100),glm::vec3(-300,0,-300),glm::vec3(-500,100,-250),glm::vec3(-300,100,-400),glm::vec3(-200,150,-300)};
@@ -104,6 +104,7 @@ inline glm::dmat3  randRotationMatrix3()
 
 Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double densityline, double densitysphere, double maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view){
     actualparts = 0;
+    
     //auto  jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,GEO_PATH, spherePolyRandomFracture());
     std::vector<glm::vec3> fracture = spherePolyRandomFracture();
     //seed two initial parts to fragment
@@ -410,7 +411,7 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
     
         
     double  originalArea = spherePolyArea(fragment);
-    std::cout << "originalArea " << originalArea << std::endl;
+//    std::cout << "originalArea " << originalArea << std::endl;
 
     if (spherePolyIntersect(fragment, fracture, result1)) {
         
@@ -433,16 +434,11 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
             double  relAreaErr = 2.0 * fabs(totalArea - originalArea) / (totalArea + originalArea);
             std::cout << "relAreaErr " << relAreaErr << std::endl;
 
-                if (relAreaErr < 1e-5 &&                                       // single pieces, please
-                             std::max(area1 / area2, area2 / area1) < 4.0)  // maximum area ratio
             
-                    if
-                    ((fragments.size()>1) && (checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2))) // pieces of radius less than 0.9
-          //  std::cout << " ---->> " << checkAtLeastPointsHitFragment(1,allPoints,result1) << " --- " << checkAtLeastPointsHitFragment(1,allPoints,result2) << std::endl;
-                    return
-                        /*(evalPoints) &&*/
-                        (checkAtLeastPointsHitFragment(1,allPoints,result1)||checkAtLeastPointsHitFragment(1,allPoints,result2));
-            
+                
+                return (relAreaErr < 1e-5 &&                                       // single pieces, please
+                        std::max(area1 / area2, area2 / area1) < 4.0);  // maximum area ratio
+        
         }
     }
     return false;
@@ -663,7 +659,7 @@ bool  Fragmenter::spherePolyInsideTest(const std::vector<glm::vec3> &poly, const
 bool Fragmenter::checkFragmentSizeSuitable(const std::vector<glm::vec3> poly){
     
     
-    std::cout << "^^^^^^^^^^^^^^^^^^^^^^^"  << std::endl;
+   // std::cout << "^^^^^^^^^^^^^^^^^^^^^^^"  << std::endl;
 
     //min sphere for
     Point  P[poly.size()];
@@ -706,15 +702,15 @@ bool Fragmenter::checkFragmentSizeSuitable(const std::vector<glm::vec3> poly){
   //  int nb_inside = 0;
   //  CGAL::Bounded_side res = inside(Point_3(0,0,0));
   //  if (res == CGAL::ON_BOUNDED_SIDE) { ++nb_inside; }
-    std::cout << (inside(Point_3(0,0,0))==CGAL::ON_BOUNDED_SIDE) << std::endl;
+//    std::cout << (inside(Point_3(0,0,0))==CGAL::ON_BOUNDED_SIDE) << std::endl;
     
     
     return
-    sqrt(ms.squared_radius())<0.9 &&      //check the fragment is not too big
+    sqrt(ms.squared_radius())<0.8 &&      //check the fragment is not too big
         (inside(Point_3(0,0,0))!=CGAL::ON_BOUNDED_SIDE);     //check the origin is not inside the fragment
     
 }
-bool Fragmenter::checkAtLeastPointsHitFragment(const int numpoints,const std::vector<std::vector<glm::vec3>> points,const std::vector<glm::vec3> poly){
+bool Fragmenter::checkAtLeastPointsHitFragment(const int numpoints, std::vector<std::vector<glm::vec3>> &points,const std::vector<glm::vec3> poly){
 
     for (int i=0;i<points.size();i++){
         
@@ -727,7 +723,8 @@ bool Fragmenter::checkAtLeastPointsHitFragment(const int numpoints,const std::ve
                 if (numfound==numpoints) {
                     std::cout << "******>>> " << i << " and " << j << std::endl;
                     numfound++;
-                    removePointsForThisFragment(numfound);
+                    //removePointsForThisFragment(numfound);
+                    std::remove(points.begin(), points.end(), points[numfound]);
                     return 1;
                 }
             
@@ -737,7 +734,7 @@ bool Fragmenter::checkAtLeastPointsHitFragment(const int numpoints,const std::ve
    
     return 0;
 }
-                
+                /*
 void Fragmenter::removePointsForThisFragment(const int elem){
     
     std::remove(allPoints.begin(), allPoints.end(), allPoints[elem]);
@@ -745,3 +742,4 @@ void Fragmenter::removePointsForThisFragment(const int elem){
     
 }
 
+*/
