@@ -8,7 +8,7 @@ sphereArcsPlot(poly(1,[end,1]), poly(2,[end,1]), poly(3,[end,1]), [ colChar, ':'
 axis equal;
 
 if 1
-    rpts = 2.*rand(3,ceil(100000/spherePolyArea(poly)))-1;
+    rpts = 2.*rand(3,1000)-1;
     rpts = normalize(rpts(:,dot(rpts,rpts) < 1));
     hold on;
     b = spherePolyInsideTest(poly, rpts);

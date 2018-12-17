@@ -76,6 +76,32 @@ std::string  str(const std::vector<V> &v) {
     return s;
 }
 
+template<typename T>
+bool  anyIsnan(const T &val);
+
+template<>
+bool  anyIsnan(const glm::vec3 &v) {
+    return (std::isnan(v.x) || std::isnan(v.y) || std::isnan(v.z));
+}
+
+template<typename V>
+bool  anyIsnan(const std::vector<V> &v) {
+    for (int i=0; i<(int)v.size(); ++i)
+        if (anyIsnan(v[i]))
+            return true;
+    return false;
+}
+
+template<typename T>
+bool  isnanTest(const T &val) {
+    if (anyIsnan(val)) {
+        std::cerr << "isnan test failed:\n" << str(val) << std::endl;
+        assert(!"isnan test failed"); // let's break in a way that allow for debugging from here
+        return true;
+    }
+    return false;
+}
+
 inline double  randSigned() { return 2.0*rand()/RAND_MAX-1.0; }
 
 inline glm::dvec3  randDirection3()
@@ -405,8 +431,10 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
 {
     //std::cout << "FRAGMENT: " << str(fragment) << std::endl;
     //std::cout << "FRACTURE: " << str(fracture) << std::endl;
-    
-    
+    std::cout << "check inputs" << std::endl;
+    isnanTest(fragment);
+    isnanTest(fracture);
+    std::cout << "done (okay)\n";
     
         
     double  originalArea = spherePolyArea(fragment);
@@ -414,12 +442,16 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
 
     if (spherePolyIntersect(fragment, fracture, result1)) {
         
-
+        std::cout << "check result 1" << std::endl;
+        isnanTest(result1);
+        std::cout << "done (okay)\n";
         
         std::vector<glm::vec3>  revFracture(fracture.rbegin(), fracture.rend());
         if (spherePolyIntersect(fragment, revFracture, result2)) {
             
-
+            std::cout << "check result 2" << std::endl;
+            isnanTest(result2);
+            std::cout << "done (okay)\n";
             
             double  area1 = spherePolyArea(result1);
             std::cout << "area1 " << area1 << std::endl;
@@ -744,4 +776,3 @@ void Fragmenter::removePointsForThisFragment(const int elem){
     
     
 }
-
