@@ -1,6 +1,6 @@
 #include "Fragmenter.hpp"
 
-#include <assert.h>
+#include "common.h"
 
 const double  Fragmenter::epsilon = 1e-6;
 const int Fragmenter::evalPoints = 2;
@@ -50,85 +50,10 @@ std::vector<std::vector<glm::vec3>> Fragmenter::allPoints = {p1,p2,p3,p4,p5,p6,p
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Helpers
-//
-
-template<typename T>
-std::string  str(const T &val);
-
-template<>
-std::string  str(const glm::vec3 &val) {
-    char  s[1024];
-    sprintf(s, "(%g, %g, %g)", val.x, val.y, val.z);
-    return std::string(s);
-}
-
-template<typename V>
-std::string  str(const std::vector<V> &v) {
-    std::string  s;
-    s.append("[ ");
-    for (int i=0; i<(int)v.size(); ++i) {
-        if (i > 0)
-            s.append(", ");
-        s.append(str(v[i]));
-    }
-    s.append(" ]");
-    return s;
-}
-
-template<typename T>
-bool  anyIsnan(const T &val);
-
-template<>
-bool  anyIsnan(const glm::vec3 &v) {
-    return (std::isnan(v.x) || std::isnan(v.y) || std::isnan(v.z));
-}
-
-template<typename V>
-bool  anyIsnan(const std::vector<V> &v) {
-    for (int i=0; i<(int)v.size(); ++i)
-        if (anyIsnan(v[i]))
-            return true;
-    return false;
-}
-
-template<typename T>
-bool  isnanTest(const T &val) {
-    if (anyIsnan(val)) {
-        std::cerr << "isnan test failed:\n" << str(val) << std::endl;
-        assert(!"isnan test failed"); // let's break in a way that allow for debugging from here
-        return true;
-    }
-    return false;
-}
-
-inline double  randSigned() { return 2.0*rand()/RAND_MAX-1.0; }
-
-inline glm::dvec3  randDirection3()
-{
-    glm::dvec3  dir;
-    double  len;
-    do {
-         dir = glm::dvec3(randSigned(), randSigned(), randSigned());
-         len = glm::length(dir);
-    } while (len > 1);
-    return (1.0/len) * dir;
-}
-
-inline glm::dmat3  randRotationMatrix3()
-{
-    auto  u = randDirection3();
-    auto  v = glm::normalize(glm::cross(randDirection3(), u));
-    auto  w = glm::cross(u, v);
-    return glm::dmat3(u,v,w);
-}
-
-//////////////////////////////////////////////////////////////////////////////
 // Class members
 //
 
-
-Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double densityline, double densitysphere, double maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view){
+Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double densityline, double densitysphere, double maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view) {
     actualparts = 0;
     //auto  jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,GEO_PATH, spherePolyRandomFracture());
     std::vector<glm::vec3> fracture = spherePolyRandomFracture();
@@ -148,28 +73,24 @@ Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double dens
 //    view->addGeometry(fragment1);
     fragments.push(fragment1);
     actualparts++;
-    
-
-    
-   
 }
-Fragmenter::Fragmenter(){
-    
+
+Fragmenter::Fragmenter() {
 }
 Fragmenter::~Fragmenter() {
 }
 
-int Fragmenter::fragment(){
-
-    while(actualparts<numparts){
+int  Fragmenter::fragment()
+{
+    while(actualparts<numparts) {
    
-        std::vector<glm::vec3> result1,result2;
+        std::vector<glm::vec3> result1, result2;
 
         
     
 
         //try this cut and if it works add the two parts
-        if( tryCut(fragments.front()->getVertices(), spherePolyRandomFracture(), result1,result2)){
+        if( tryCut(fragments.front()->getVertices(), spherePolyRandomFracture(), result1, result2)){
             //remove the last fragment on the queue as we have now dealt with this
             
 
@@ -202,13 +123,13 @@ int Fragmenter::fragment(){
     return 1;
 }
 
-int Fragmenter::testIntersections(std::vector<glm::vec3> jline){
+int  Fragmenter::testIntersections(std::vector<glm::vec3> jline){
    
     std::vector<glm::vec3> polys[2];
     polys[0] = fragments.front()->getVertices();
     polys[1] = jline;
     
-    int curPoly = 0; // then one you’re “sitting on” while intersecting with the other
+    int curPoly = 0; // the index of the polygon we are “sitting on” while intersecting with the other
     int idx[2] = {0,0};
     
     int sizepoly1 = polys[0].size();
@@ -227,8 +148,8 @@ int Fragmenter::testIntersections(std::vector<glm::vec3> jline){
         glm::vec3 poly1p2 = polys[curPoly].at((idx[curPoly] + 1) % polys[curPoly].size());
         
         
-        std::cout << "Vertex actual p1: " << poly1p1.x << " " << poly1p1.y << " " << poly1p1.z << std::endl;
-        std::cout << "Vertex next p1:" << poly1p2.x << " " << poly1p2.y << " " << poly1p2.z << std::endl;
+        //std::cout << "Vertex actual p1: " << str(poly1p1) << std::endl;
+        //std::cout << "Vertex next p1:" << str(poly1p2) << std::endl;
         
         //iterate over the other polygon
         //in notes: for (...) { } -> idx[1-curPoly] says which edge of the other polygon intersects
@@ -313,7 +234,7 @@ int Fragmenter::testIntersections(std::vector<glm::vec3> jline){
     return 1;
 }
 
-int Fragmenter::testFragment(std::vector<glm::vec3> jline)
+int  Fragmenter::testFragment(std::vector<glm::vec3> jline)
 {
     std::vector<glm::vec3> result;
     std::vector<glm::vec3> result2;
@@ -330,7 +251,8 @@ int Fragmenter::testFragment(std::vector<glm::vec3> jline)
     return 0;
 }
 
-int Fragmenter::createPolytope(){
+int  Fragmenter::createPolytope()
+{
     std::queue<Fragment*> tmpqueue = fragments;
     
     int counterfile=0;
@@ -342,21 +264,17 @@ int Fragmenter::createPolytope(){
 
     }
     return 1;
-    
-
 }
 
-void Fragmenter::listAllFragments(){
+void  Fragmenter::listAllFragments()
+{
     std::queue<Fragment*> tmpqueue = fragments;
     while (!tmpqueue.empty())
     {
         view->addGeometry(tmpqueue.front());
 
         tmpqueue.pop();
-        
     }
-
-    
 }
 
 bool  Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2, glm::vec3& intersectionpoint)
@@ -373,9 +291,9 @@ bool  Fragmenter::computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm:
     //std::cout << "LAMBDA2: "<< lambda[1] << std::endl;
 
     std::vector<bool> inside(2);
-    for (int i=0; i<2; i++) {
+    for (int i=0; i<2; i++)
         inside[i] = (lambda[i] > 0.5*epsilon) && (lambda[i] < 1+epsilon);  // [TW:] changed to -epsilon to 0.5*epsilon
-    }
+    
     if (inside[0] && inside[1]) {
         
         //compute first intersection point
@@ -431,38 +349,37 @@ bool  Fragmenter::tryCut(const std::vector<glm::vec3> &fragment,
 {
     //std::cout << "FRAGMENT: " << str(fragment) << std::endl;
     //std::cout << "FRACTURE: " << str(fracture) << std::endl;
-    std::cout << "check inputs" << std::endl;
-    isnanTest(fragment);
-    isnanTest(fracture);
-    std::cout << "done (okay)\n";
+    assertNoNan(fragment);
+    assertNoNan(fracture);
+
+    assertNoRepeat(fragment);
+    assertNoRepeat(fracture);
     
-        
     double  originalArea = spherePolyArea(fragment);
     std::cout << "originalArea " << originalArea << std::endl;
 
     if (spherePolyIntersect(fragment, fracture, result1)) {
         
-        std::cout << "check result 1" << std::endl;
-        isnanTest(result1);
-        std::cout << "done (okay)\n";
+        assertNoNan(result1);
         
         std::vector<glm::vec3>  revFracture(fracture.rbegin(), fracture.rend());
         if (spherePolyIntersect(fragment, revFracture, result2)) {
             
-            std::cout << "check result 2" << std::endl;
-            isnanTest(result2);
-            std::cout << "done (okay)\n";
+            assertNoNan(result2);
             
             double  area1 = spherePolyArea(result1);
+            assertNoNan(area1);
             std::cout << "area1 " << area1 << std::endl;
 
             double  area2 = spherePolyArea(result2);
+            assertNoNan(area2);
             std::cout << "area2 " << area2 << std::endl;
 
             double  totalArea = area1 + area2;
             std::cout << "totalArea " << totalArea << std::endl;
 
             double  relAreaErr = 2.0 * fabs(totalArea - originalArea) / (totalArea + originalArea);
+            assertNoNan(relAreaErr);
             std::cout << "relAreaErr " << relAreaErr << std::endl;
 
                 if (relAreaErr < 1e-5 &&                                       // single pieces, please
@@ -556,6 +473,12 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
                                       const std::vector<glm::vec3> &poly2,
                                       std::vector<glm::vec3> &result)
 {
+    assertNoNan(poly1);
+    assertNoNan(poly2);
+
+    assertNoRepeat(poly1);
+    assertNoRepeat(poly2);
+    
     const std::vector<glm::vec3>  *polys[2] = {&poly1, &poly2};
 #if 0
     // for debug purposes, reverse cut polygon:
@@ -568,7 +491,7 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
         exit(1);
     }
     
-    int  curPoly = 0; // then one you’re “sitting on” while intersecting with the other
+    int  curPoly = 0; // index of the polygon we are “sitting on” while intersecting with the other
     int  idx = 0;
 
     result.clear();
@@ -579,8 +502,10 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
     int  idxSucc = (idx + 1) % (*polys[curPoly]).size();  // index of end point of current edge on current polygon
     
     bool  noCut = true;
-    
-    for (int steps=0; steps<1000; steps++) {
+
+    int iterations = 10000;  // maximum number of iterations
+    assert(iterations > 2 * (polys[0]->size() + polys[1]->size()));
+    for (; iterations > 0; --iterations) {
         bool       intersects = false;
         int        jdx=-1, jdxSucc=-1;
         glm::vec3  intersection;
@@ -634,6 +559,10 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
         //if (curPoly == 0 && idx == 0)
         //    break;
     }
+    assert(iterations > 0); // catch "inifinite loop"
+
+    assertNoNan(result);
+    assertNoRepeat(result);
 
     //std::cout << str(result) << std::endl;
     return !noCut && result.size() > 0;
@@ -641,23 +570,36 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
 
 double  Fragmenter::spherePolyArea(const std::vector<glm::vec3> &poly)
 {
+    assertNoNan(poly);
+    assertNoRepeat(poly);
     double  sum = 0;
     for (int i=0; i<(int)poly.size(); ++i)
         sum += spherePolyAngle(poly, i);
     return sum - M_PI * ((int)poly.size() - 2);
 }
 
+// Debug session on 17-Dec-2018 revealed that some vertices in \a poly
+// were duplicated. This, of course, led to zero-length cross products
+// that then in turn spewed NaNs...
+//
+// Hence introduced assertion against duplicate points.
+//
 double  Fragmenter::spherePolyAngle(const std::vector<glm::vec3> &poly, int idx)
 {
     int  n = (int)poly.size();
+    
     glm::vec3  pp = poly[(idx + n -1) % n];   // previous
     glm::vec3  pc = poly[idx];                // current
     glm::vec3  pn = poly[(idx + 1) % n];      // next
+    assert(!epsilonSame(pp, pc));
+    assert(!epsilonSame(pc, pn));
+    
 #if 1  // Paranoia
     pp = glm::normalize(pp);
     pc = glm::normalize(pc);
     pn = glm::normalize(pn);
 #endif
+    
     glm::vec3  np = glm::normalize(glm::cross(pp, pc));
     glm::vec3  nn = glm::normalize(glm::cross(pc, pn));
 

@@ -495,8 +495,8 @@ void Fragment::createSTLwithlargecones(int counterfile){
         glm::vec3 pos1 = vertices[n];
         glm::vec3 pos2 = vertices[n+1];
        
-       std::cout << "pos1: " << pos1.x << ", " << pos1.y << ", " << pos1.z <<  std::endl;
-       std::cout << "pos2: " << pos2.x << ", " << pos2.y << ", " << pos2.z <<  std::endl;
+        //std::cout << "pos1: " << str(pos1) << std::endl;
+        //std::cout << "pos2: " << str(pos2) << std::endl;
 
         //add the centroid
         //add as well the two vertices next two each other
@@ -508,7 +508,7 @@ void Fragment::createSTLwithlargecones(int counterfile){
        //add the normal of the triangle
        glm::vec3 norm = glm::cross(glm::vec3(pos2),glm::vec3(pos1));
        
-       std::cout << "Normal: " << norm.x << ", " << norm.y << ", " << norm.z <<  std::endl;
+       //std::cout << "Normal: " << str(norm) << std::endl;
        normalspolytope.push_back(norm);
        normalspolytope.push_back(norm);
        normalspolytope.push_back(norm);
