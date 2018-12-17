@@ -504,7 +504,7 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
     bool  noCut = true;
 
     int iterations = 10000;  // maximum number of iterations
-    assert(iterations > 2 * (polys[0]->size() + polys[1]->size()));
+    assert(iterations > 3 * (polys[0]->size() + polys[1]->size()));
     for (; iterations > 0; --iterations) {
         bool       intersects = false;
         int        jdx=-1, jdxSucc=-1;
@@ -543,10 +543,18 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
                 assert(result.size());
                 if (!epsilonSame(result.back(), intersection, 2.0))
                     result.push_back(intersection);
-                idx = jdx;
+                idx = jdx;  // idx now points to other polygon's predecessor to intersection point
                 idxSucc = jdxSucc;
                 curPoly = 1 - curPoly;
-                // leave idx as is, even if "behind" intersection point
+                //
+                // POSSIBLE BUG: jdx->jdxSucc now re-enters former
+                // polygon from the outside; will this next clear
+                // result in the branch above?
+                //
+                // POSSIBLE SOLUTION: instead of having current edge
+                // be (curPoly,idx)->(curPoly,idxSucc), have it be
+                // (result,back)->(curPoly,idxSucc)?
+                //
             }
         }
 
@@ -559,7 +567,7 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
         //if (curPoly == 0 && idx == 0)
         //    break;
     }
-    assert(iterations > 0); // catch "inifinite loop"
+    assert(iterations > 0 && "maximum iteration count exceeded"); // catch "inifinite" loop
 
     assertNoNan(result);
     assertNoRepeat(result);
