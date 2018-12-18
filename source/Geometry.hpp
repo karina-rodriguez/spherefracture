@@ -76,7 +76,8 @@ public:
 	std::vector<unsigned short> getIndices();
 	
     //vertices
-    std::vector<glm::vec3> getVertices();
+    const std::vector<glm::vec3> &getVertices();
+    std::vector<glm::dvec3> getVerticesD();
     std::vector<glm::vec3> getVerticesReversed();
     void setVertices(std::vector<glm::vec3> verticest);
 

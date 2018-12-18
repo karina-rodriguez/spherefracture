@@ -90,18 +90,20 @@ void Geometry::calculateBoundingBox() {
 std::vector<unsigned short> Geometry::getIndices() {
 	return indices;
 }
-std::vector<glm::vec3> Geometry::getVertices() {
+const std::vector<glm::vec3> &Geometry::getVertices() {
     
  //   std::cout << "$$$$$$$$$$$$$$$$" << vertices.size() << std::endl;
 	return vertices;
 }
 
-std::vector<glm::vec3> Geometry::getVerticesReversed(){
-    
-    std::vector<glm::vec3> thevertices = vertices;
-    std::reverse(thevertices.begin(),thevertices.end());
-    return thevertices;
+std::vector<glm::vec3> Geometry::getVerticesReversed() {
+    return std::vector<glm::vec3>(vertices.rbegin(), vertices.rend());
 }
+
+std::vector<glm::dvec3> Geometry::getVerticesD() {
+    return std::vector<glm::dvec3>(vertices.begin(), vertices.end());
+}
+
 void Geometry::setVertices(std::vector<glm::vec3> verticest) {
     vertices=verticest;
 }
@@ -203,10 +205,9 @@ int Geometry::exportPoints(){
     //file.seekp(0); // subtracts one from the buffer position ( now 18 )
    // file.write("", 1);
     file.close();
-    return 0;
-    return EXIT_SUCCESS;
  */
-    
+    return 0;
+    //return EXIT_SUCCESS;
 }
 GLenum Geometry::getPrimitive(){
     return primitive;

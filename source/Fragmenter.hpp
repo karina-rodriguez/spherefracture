@@ -39,7 +39,7 @@ public:
     };
 
     static RandomFractureOptions  defaultRandomFractureOptions;
-    static std::vector<std::vector<glm::vec3>> allPoints;
+    static std::vector<std::vector<glm::dvec3>> allPoints;
 
 private:
     int radius;
@@ -56,7 +56,7 @@ private:
     static const double  epsilon;
     static const int evalPoints;
 
-    static bool  epsilonSame(const glm::vec3 &a, const glm::vec3 &b, double epsilonScale=1.0);
+    static bool  epsilonSame(const glm::dvec3 &a, const glm::dvec3 &b, double epsilonScale=1.0);
     
     //set the fragment and its level
     std::queue<Fragment*> fragments;
@@ -66,32 +66,32 @@ public:
     Fragmenter();
     ~Fragmenter();
     int fragment();
-    int testIntersections(std::vector<glm::vec3> jline);
-    int testFragment(std::vector<glm::vec3> jline);
+    int testIntersections(std::vector<glm::dvec3> jline);
+    int testFragment(std::vector<glm::dvec3> jline);
     void listAllFragments();
     int createPolytope();
         
     
-    static bool  computeIntersection(glm::vec3 poly1p1, glm::vec3 poly1p2, glm::vec3 poly2p1, glm::vec3 poly2p2,glm::vec3& intersectionpoint);
-    static bool checkFragmentSizeSuitable(const std::vector<glm::vec3> poly);
-    static bool checkAtLeastPointsHitFragment(const int numpoints, std::vector<std::vector<glm::vec3>> &points, const std::vector<glm::vec3> poly);
-        
-    /*static void removePointsForThisFragment(const int elem);*/
+
+    static bool  computeIntersection(glm::dvec3 poly1p1, glm::dvec3 poly1p2, glm::dvec3 poly2p1, glm::dvec3 poly2p2,glm::dvec3& intersectionpoint);
+    static bool checkFragmentSizeSuitable(const std::vector<glm::dvec3> poly);
+    static bool checkAtLeastPointsHitFragment(const int numpoints,const std::vector<std::vector<glm::dvec3>> points, const std::vector<glm::dvec3> poly);
+    static void removePointsForThisFragment(const int elem);
 
     
     // Tim's implementation:
-    bool  tryCut(const std::vector<glm::vec3> &fragment,
-                 const std::vector<glm::vec3> &fracture,
-                 std::vector<glm::vec3> &result1,
-                 std::vector<glm::vec3> &result2);
-    static std::vector<glm::vec3>  spherePolyRandomFracture(const RandomFractureOptions &opt=defaultRandomFractureOptions);
-    static bool  spherePolyIntersect(const std::vector<glm::vec3> &poly1,
-                                     const std::vector<glm::vec3> &poly2,
-                                     std::vector<glm::vec3> &result);
-    static double  spherePolyArea(const std::vector<glm::vec3> &poly);
-    static double  spherePolyAngle(const std::vector<glm::vec3> &poly, int idx);
+    bool  tryCut(const std::vector<glm::dvec3> &fragment,
+                 const std::vector<glm::dvec3> &fracture,
+                 std::vector<glm::dvec3> &result1,
+                 std::vector<glm::dvec3> &result2);
+    static std::vector<glm::dvec3>  spherePolyRandomFracture(const RandomFractureOptions &opt=defaultRandomFractureOptions);
+    static bool  spherePolyIntersect(const std::vector<glm::dvec3> &poly1,
+                                     const std::vector<glm::dvec3> &poly2,
+                                     std::vector<glm::dvec3> &result);
+    static double  spherePolyArea(const std::vector<glm::dvec3> &poly);
+    static double  spherePolyAngle(const std::vector<glm::dvec3> &poly, int idx);
 
-    static bool  spherePolyInsideTest(const std::vector<glm::vec3> &poly, const glm::vec3 &point);
+    static bool  spherePolyInsideTest(const std::vector<glm::dvec3> &poly, const glm::dvec3 &point);
 
     static bool  tests();
 };
