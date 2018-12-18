@@ -468,6 +468,15 @@ bool  Fragmenter::epsilonSame(const glm::vec3 &a, const glm::vec3 &b, double eps
  *  half(!) an epsilon ball of each line around its starting point and
  *  to *include* a full epsilon ball around its end point. I already
  *  adjusted computeIntersection accordingly.
+ *
+ *  Underlying strategy: always consider edge
+ *  (result,end)->(curPoly,idxSucc) and intersect it in turn with
+ *  every other edge (1-curPoly,idx)->(1-curPoly,idxSucc). Where it
+ *  intersects, push another point to result. Depending on whether
+ *  current edge entered or left 1-curPoly, discard the old contents
+ *  of result and stay on current poly, or append and switch curPoly
+ *  to 1-curPoly, continuing from (result,jdxSucc).
+ *
  */
 bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
                                       const std::vector<glm::vec3> &poly2,
@@ -527,10 +536,12 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
             idxSucc = (idx + 1) % (*polys[curPoly]).size();
             if (!epsilonSame(result.back(), (*polys[curPoly])[idx], 2.0))
                 result.push_back((*polys[curPoly])[idx]);
+            else
+                assert(!"never reached");
         } else {
             noCut = false;
             if (glm::dot(result.back(),
-                         glm::cross((*polys[1-curPoly])[jdx], (*polys[1-curPoly])[jdxSucc])) < 0) {
+                         glm::cross((*polys[1-curPoly])[jdx], (*polys[1-curPoly])[jdxSucc])) < 0) /* or should it be, '< -Fragmenter::epsilon' ?*/ {
                 // we are approaching from outside the cut polygon ->
                 // discard what has been collected so far and start
                 // from intersection point:
@@ -543,18 +554,11 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
                 assert(result.size());
                 if (!epsilonSame(result.back(), intersection, 2.0))
                     result.push_back(intersection);
+                else
+                    assert(!"does this ever happen?");
                 idx = jdx;  // idx now points to other polygon's predecessor to intersection point
                 idxSucc = jdxSucc;
                 curPoly = 1 - curPoly;
-                //
-                // POSSIBLE BUG: jdx->jdxSucc now re-enters former
-                // polygon from the outside; will this next clear
-                // result in the branch above?
-                //
-                // POSSIBLE SOLUTION: instead of having current edge
-                // be (curPoly,idx)->(curPoly,idxSucc), have it be
-                // (result,back)->(curPoly,idxSucc)?
-                //
             }
         }
 
@@ -567,6 +571,7 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::vec3> &poly1,
         //if (curPoly == 0 && idx == 0)
         //    break;
     }
+    std::cerr << "vertex counts of poly1, poly2 and result: " << poly1.size() << ", " << poly2.size() << ", " << result.size() << ", " << std::endl;
     assert(iterations > 0 && "maximum iteration count exceeded"); // catch "inifinite" loop
 
     assertNoNan(result);
