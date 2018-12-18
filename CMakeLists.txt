@@ -95,6 +95,7 @@ add_executable(breakSphere
 	source/Fragment.hpp
 	source/Fragmenter.cpp
 	source/Fragmenter.hpp
+    source/common.h
 	source/SimpleFragmentShader.hlsl
 	source/SimpleVertexShader.hlsl
 	common/objloader.cpp
@@ -111,7 +112,6 @@ target_link_libraries(breakSphere
 	${CGAL_3RD_PARTY_LIBRARIES}
 	assimp
 )
-
 
 
 

@@ -416,38 +416,39 @@ bool exportScene( const std::string& pFile,
     return 1;
 }
 bool myOwnExportSceneSTL( const std::string& pFile,
-                 std::vector<glm::vec3> thevertices,
-                 const std::vector<glm::vec3> thenormals)
+                 std::vector<glm::dvec3> thevertices,
+                 const std::vector<glm::dvec3> thenormals)
 {
     
     std::ofstream myfile;
     myfile.open (pFile);
+    myfile <<std::fixed << std::setprecision(16);
     //start the file
     myfile << "solid fragmentGeometry\n";
     
-    int k = 0;
-    for(int i = 0; i < (thevertices.size() / 3); i++)
+    
+   // std::cout << "Num face : " << (thevertices.size() / 3) << std::endl;
+    for(int k = 0; k < thevertices.size(); k=k+3)
     {
         glm::vec3 pos0 = thevertices[k];
         glm::vec3 pos1 = thevertices[k+1];
         glm::vec3 pos2 = thevertices[k+2];
         glm::vec3 norm = thenormals[k];
-        
-        
-        myfile << "facet normal " << norm.x << " " << norm.y << " " << norm.z << "\n";
-        myfile << "outer loop\n";
-        myfile << "vertex " << pos0.x << " " << pos0.y << " " << pos0.z << "\n";
-        myfile << "vertex " << pos1.x << " " << pos1.y << " " << pos1.z << "\n";
-        myfile << "vertex " << pos2.x << " " << pos2.y << " " << pos2.z << "\n";
+              
+        myfile << "  facet normal " << norm.x << " " << norm.y << " " << norm.z << "\n";
+        myfile << "    outer loop\n";
+        myfile << "      vertex " << pos0.x << " " <<  pos0.y << " " << pos0.z << "\n";
+        myfile << "      vertex "  << pos1.x << " " << pos1.y << " " << pos1.z << "\n";
+        myfile << "      vertex " << pos2.x << " " << pos2.y << " " <<  pos2.z << "\n";
 
-        myfile << "end loop\n";
-        myfile << "end factet\n";
-        k = k+3;
+        myfile << "    endloop\n";
+        myfile << "  endfacet\n";
+       // k = k+3;
         
     }
     
     //end the file
-    myfile << "solid fragmentGeometry\n";
+    myfile << "endsolid fragmentGeo\n";
     
     myfile.close();
     

@@ -10,6 +10,7 @@
 // Include GLM
 #include <glm/glm.hpp>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <fstream>
 
@@ -60,8 +61,8 @@ bool exportScene( const std::string& pFile,
                  const std::vector<int> theindices);
 
 bool myOwnExportSceneSTL( const std::string& pFile,
-                         std::vector<glm::vec3> thevertices,
-                         const std::vector<glm::vec3> thenormals);
+                         std::vector<glm::dvec3> thevertices,
+                         const std::vector<glm::dvec3> thenormals);
 
 
 

@@ -62,7 +62,6 @@ std::vector<std::vector<glm::dvec3>> Fragmenter::allPoints = {p1,p2,p3,p4,p5,p6,
 Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double densityline, double densitysphere, double maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view) {
     actualparts = 0;
     
-    //auto  jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,GEO_PATH, spherePolyRandomFracture());
     std::vector<glm::dvec3> fracture = spherePolyRandomFracture();
     //seed two initial parts to fragment
     Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::dvec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,fracture);
@@ -363,11 +362,8 @@ bool  Fragmenter::tryCut(const std::vector<glm::dvec3> &fragment,
     assertNoRepeat(fracture);
     
     double  originalArea = spherePolyArea(fragment);
-<<<<<<< HEAD
-//    std::cout << "originalArea " << originalArea << std::endl;
-=======
+
     //std::cout << "originalArea " << originalArea << std::endl;
->>>>>>> b224b995e79ad52497d6f22ecce1e616d5f0c33e
 
     if (spherePolyIntersect(fragment, fracture, result1)) {
         
@@ -393,12 +389,15 @@ bool  Fragmenter::tryCut(const std::vector<glm::dvec3> &fragment,
             assertNoNan(relAreaErr);
             std::cout << "relAreaErr " << relAreaErr << std::endl;
 
-            
-            
-                return (relAreaErr < 1e-5 &&                                       // single pieces, please
-                        std::max(area1 / area2, area2 / area1) < 4.0) ; // maximum area ratio
+            std::cout << "SUITABLE SIZE: " << std::endl;
+
+            std::cout << checkFragmentSizeSuitable(result1) << std::endl;
+            std::cout << checkFragmentSizeSuitable(result2) << std::endl;
+
+                if (relAreaErr < 1e-5 &&                                       // single pieces, please
+                        std::max(area1 / area2, area2 / area1) < 4.0)  // maximum area ratio
                     
-                  //  return checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2);
+                    return checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2);
         
         }
     }
@@ -666,7 +665,6 @@ bool  Fragmenter::spherePolyInsideTest(const std::vector<glm::dvec3> &poly, cons
 bool Fragmenter::checkFragmentSizeSuitable(const std::vector<glm::dvec3> poly){
     
     
-   // std::cout << "^^^^^^^^^^^^^^^^^^^^^^^"  << std::endl;
 
     //min sphere for
     Point  P[poly.size()];
@@ -713,7 +711,7 @@ bool Fragmenter::checkFragmentSizeSuitable(const std::vector<glm::dvec3> poly){
     
     
     return
-    sqrt(ms.squared_radius())<0.9 &&      //check the fragment is not too big
+    sqrt(ms.squared_radius())<0.75 &&      //check the fragment is not too big
         (inside(Point_3(0,0,0))!=CGAL::ON_BOUNDED_SIDE);     //check the origin is not inside the fragment
     
 }
