@@ -59,7 +59,7 @@ private:
     static bool  epsilonSame(const glm::dvec3 &a, const glm::dvec3 &b, double epsilonScale=1.0);
     
     //set the fragment and its level
-    std::queue<Fragment*> fragments;
+    std::deque<Fragment*> fragments;
 public:
 
     Fragmenter(int numparts, glm::vec3 color, double radius, double densityline, double densitysphere, double maxpeak, View* view);
