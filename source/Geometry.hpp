@@ -76,10 +76,10 @@ public:
 	std::vector<unsigned short> getIndices();
 	
     //vertices
-    const std::vector<glm::vec3> &getVertices();
-    std::vector<glm::dvec3> getVerticesD();
-    std::vector<glm::vec3> getVerticesReversed();
-    void setVertices(std::vector<glm::vec3> verticest);
+    const std::vector<glm::vec3> &getVertices() const;
+    std::vector<glm::dvec3> getVerticesD() const;
+    std::vector<glm::vec3> getVerticesReversed() const;
+    void setVertices(const std::vector<glm::vec3> &verticest);
 
     
     std::vector<glm::vec3> getColors();

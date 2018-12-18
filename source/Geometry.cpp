@@ -2,26 +2,32 @@
 
 
 
-Geometry::Geometry(GLuint vertexarrayID, glm::vec3 colour, GLenum primitive, geo_type type): vertexArrayID(vertexArrayID), colour(colour), primitive(primitive), type(type){
-	transformation = glm::mat4(1.0);
-	bbtransformation = glm::mat4(1.0);
-	visible = 1;
+Geometry::Geometry(GLuint _vertexArrayID, glm::vec3 _colour, GLenum _primitive, geo_type _type)
+    : vertexArrayID(_vertexArrayID), colour(_colour), primitive(_primitive), type(_type)
+{
+    transformation = glm::mat4(1.0);
+    bbtransformation = glm::mat4(1.0);
+    visible = 1;
     numsteps = 1;
 
     vertexbuffer=0;
     colorbuffer=0;
     normalbuffer=0;
 }
-Geometry::~Geometry() {
+
+Geometry::~Geometry()
+{
     glDeleteBuffers(1, &vertexbuffer);
     glDeleteBuffers(1, &colorbuffer);
 }
-void Geometry::setColor(glm::vec3 colort) {
 
-	for (int i = 0; i < vertices.size(); i++) {
-		colors.push_back(colort);
-	}
+void Geometry::setColor(glm::vec3 colort)
+{
+    for (int i = 0; i < vertices.size(); i++) {
+        colors.push_back(colort);
+    }
 }
+
 void Geometry::storePointSet(std::vector<glm::vec3> verticest){
 
   /*  point_set.reserve (3); // For memory optimization
@@ -36,154 +42,157 @@ void Geometry::storePointSet(std::vector<glm::vec3> verticest){
 }
 
 void Geometry::calculateBoundingBox() {
-	boundingbox_min.x = boundingbox_max.x = vertices[0].x;
-	boundingbox_min.y = boundingbox_max.y = vertices[0].y;
-	boundingbox_min.z = boundingbox_max.z = vertices[0].z;
-	for (int i = 0; i < vertices.size(); i++) {
-		if (vertices[i].x < boundingbox_min.x) boundingbox_min.x = vertices[i].x;
-		if (vertices[i].x > boundingbox_max.x) boundingbox_max.x = vertices[i].x;
-		if (vertices[i].y < boundingbox_min.y) boundingbox_min.y = vertices[i].y;
-		if (vertices[i].y > boundingbox_max.y) boundingbox_max.y = vertices[i].y;
-		if (vertices[i].z < boundingbox_min.z) boundingbox_min.z = vertices[i].z;
-		if (vertices[i].z > boundingbox_max.z) boundingbox_max.z = vertices[i].z;
-	}
+    boundingbox_min.x = boundingbox_max.x = vertices[0].x;
+    boundingbox_min.y = boundingbox_max.y = vertices[0].y;
+    boundingbox_min.z = boundingbox_max.z = vertices[0].z;
+    for (int i = 0; i < vertices.size(); i++) {
+        if (vertices[i].x < boundingbox_min.x) boundingbox_min.x = vertices[i].x;
+        if (vertices[i].x > boundingbox_max.x) boundingbox_max.x = vertices[i].x;
+        if (vertices[i].y < boundingbox_min.y) boundingbox_min.y = vertices[i].y;
+        if (vertices[i].y > boundingbox_max.y) boundingbox_max.y = vertices[i].y;
+        if (vertices[i].z < boundingbox_min.z) boundingbox_min.z = vertices[i].z;
+        if (vertices[i].z > boundingbox_max.z) boundingbox_max.z = vertices[i].z;
+    }
 
-	//line1
-	verticesBoundingBox.push_back(boundingbox_min); //back bottom left 
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_min.y, boundingbox_min.z)); //back bottom right
-	//line2
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_min.y, boundingbox_min.z)); //back bottom right
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_max.y, boundingbox_min.z)); //back top right
-	//line3
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_max.y, boundingbox_min.z)); //back top right
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_max.y, boundingbox_min.z)); //back top left
-	//line4
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_max.y, boundingbox_min.z)); //back top left
-	verticesBoundingBox.push_back(boundingbox_min); //back bottom left 
-	//line 5
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_min.y, boundingbox_max.z)); //front bottom left 
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_min.y, boundingbox_max.z)); //front bottom right
-	//line 6
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_min.y, boundingbox_max.z)); //front bottom right
-	verticesBoundingBox.push_back(boundingbox_max); //front top right 
-	//line 7
-	verticesBoundingBox.push_back(boundingbox_max); //front top right 
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_max.y, boundingbox_max.z)); //front top left 
-	//line 8
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_max.y, boundingbox_max.z)); //front top left 
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_min.y, boundingbox_max.z)); //front bottom left 
-	//line 9
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_min.y, boundingbox_min.z)); //front top left 
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_min.y, boundingbox_max.z)); //front bottom left 
-	//line 10
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_min.y, boundingbox_min.z)); //front top left 
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_min.y, boundingbox_max.z)); //front bottom left 
-	//line 11
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_max.y, boundingbox_min.z)); //front top left 
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_max.y, boundingbox_max.z)); //front bottom left 
-	//line 12
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_max.y, boundingbox_min.z)); //front top left 
-	verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_max.y, boundingbox_max.z)); //front bottom left 
+    //line1
+    verticesBoundingBox.push_back(boundingbox_min); //back bottom left 
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_min.y, boundingbox_min.z)); //back bottom right
+    //line2
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_min.y, boundingbox_min.z)); //back bottom right
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_max.y, boundingbox_min.z)); //back top right
+    //line3
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_max.y, boundingbox_min.z)); //back top right
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_max.y, boundingbox_min.z)); //back top left
+    //line4
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_max.y, boundingbox_min.z)); //back top left
+    verticesBoundingBox.push_back(boundingbox_min); //back bottom left 
+    //line 5
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_min.y, boundingbox_max.z)); //front bottom left 
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_min.y, boundingbox_max.z)); //front bottom right
+    //line 6
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_min.y, boundingbox_max.z)); //front bottom right
+    verticesBoundingBox.push_back(boundingbox_max); //front top right 
+    //line 7
+    verticesBoundingBox.push_back(boundingbox_max); //front top right 
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_max.y, boundingbox_max.z)); //front top left 
+    //line 8
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_max.y, boundingbox_max.z)); //front top left 
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_min.y, boundingbox_max.z)); //front bottom left 
+    //line 9
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_min.y, boundingbox_min.z)); //front top left 
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_min.y, boundingbox_max.z)); //front bottom left 
+    //line 10
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_min.y, boundingbox_min.z)); //front top left 
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_min.y, boundingbox_max.z)); //front bottom left 
+    //line 11
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_max.y, boundingbox_min.z)); //front top left 
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_min.x, boundingbox_max.y, boundingbox_max.z)); //front bottom left 
+    //line 12
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_max.y, boundingbox_min.z)); //front top left 
+    verticesBoundingBox.push_back(glm::vec3(boundingbox_max.x, boundingbox_max.y, boundingbox_max.z)); //front bottom left 
 
 }
 
-std::vector<unsigned short> Geometry::getIndices() {
-	return indices;
+std::vector<unsigned short> Geometry::getIndices()
+{
+    return indices;
 }
-const std::vector<glm::vec3> &Geometry::getVertices() {
-    
+const std::vector<glm::vec3> &Geometry::getVertices() const
+{
  //   std::cout << "$$$$$$$$$$$$$$$$" << vertices.size() << std::endl;
-	return vertices;
+    return vertices;
 }
 
-std::vector<glm::vec3> Geometry::getVerticesReversed() {
+std::vector<glm::vec3> Geometry::getVerticesReversed() const
+{
     return std::vector<glm::vec3>(vertices.rbegin(), vertices.rend());
 }
 
-std::vector<glm::dvec3> Geometry::getVerticesD() {
+std::vector<glm::dvec3> Geometry::getVerticesD() const
+{
     return std::vector<glm::dvec3>(vertices.begin(), vertices.end());
 }
 
-void Geometry::setVertices(std::vector<glm::vec3> verticest) {
-    vertices=verticest;
+void Geometry::setVertices(const std::vector<glm::vec3> &verticest) {
+    vertices = verticest;
 }
 
 std::vector<glm::vec3> Geometry::getColors() {
-	//std::cout << colors.size() << std::endl;
-	return colors;
+    //std::cout << colors.size() << std::endl;
+    return colors;
 }
 std::vector<glm::vec2> Geometry::getUVs() {
-	return uvs;
+    return uvs;
 }
 std::vector<glm::vec3> Geometry::getNormals() {
-	return normals;
+    return normals;
 }
 GLuint* Geometry::getVertexbuffer() {
-	return &vertexbuffer;
-}	
+    return &vertexbuffer;
+}   
 GLuint* Geometry::getColorbuffer() {
-	return &colorbuffer;
+    return &colorbuffer;
 }
 GLuint* Geometry::getNormalbuffer() {
-	return &normalbuffer;
+    return &normalbuffer;
 }
 GLuint* Geometry::getVertexBoundingBoxbuffer() {
-	return &vertexbufferBoundingBox;
+    return &vertexbufferBoundingBox;
 }
 GLuint* Geometry::getColorBoundingBoxbuffer() {
-	return &colorbufferBoundingBox;
+    return &colorbufferBoundingBox;
 }
 std::vector<glm::vec3> Geometry::getColorsBoundingBox() {
-	return colorsBoundingBox;
+    return colorsBoundingBox;
 }
 std::vector<glm::vec3> Geometry::getVerticesBoundingBox() {
-	return verticesBoundingBox;
+    return verticesBoundingBox;
 }
 
 
 void Geometry::setInitialPosition(glm::vec3 initial_post) {
-	initial_pos = initial_post;
-	position = initial_pos;
-	
+    initial_pos = initial_post;
+    position = initial_pos;
+    
 }
 void Geometry::updateBoundingBox() {
-	boundingbox_min = boundingbox_min + position;
-	boundingbox_max = boundingbox_max + position;
-	bbtransformation = bbtransformation * glm::translate(position);
+    boundingbox_min = boundingbox_min + position;
+    boundingbox_max = boundingbox_max + position;
+    bbtransformation = bbtransformation * glm::translate(position);
 }
 glm::vec3 Geometry::getInitialPosition() {
-	return initial_pos;
+    return initial_pos;
 }
 
 glm::vec3 Geometry::getPosition() {
-	return position;
+    return position;
 }
 
 void Geometry::setTransformation(glm::mat4 transformationt) {
-	transformation = transformationt;
-//	bbtransformation = bbtransformation * transformationt;
+    transformation = transformationt;
+//  bbtransformation = bbtransformation * transformationt;
 
 }
 glm::mat4 Geometry::getTransformation() {
-	return transformation;
+    return transformation;
 }
 glm::mat4 Geometry::getBoundingBoxTransformation() {
-	return bbtransformation;
+    return bbtransformation;
 }
 glm::vec3 Geometry::getBoundingBoxMin() {
-	return boundingbox_min;
+    return boundingbox_min;
 }
 glm::vec3 Geometry::getBoundingBoxMax(){
-	return boundingbox_max;
+    return boundingbox_max;
 
 }
 
 
 bool Geometry::isVisible() {
-	return visible;
+    return visible;
 }
 void Geometry::setVisible(bool is) {
-	visible = is;
+    visible = is;
 }
 
 int Geometry::exportPoints(){

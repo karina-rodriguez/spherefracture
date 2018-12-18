@@ -10,6 +10,7 @@ Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
     3, 7, 0.28, 0.28/3.0, 0.9
 #elif 1
     6, 6, 0.3, 0.3/3.0, 0.85
+    //6, 6, 0.3, 0.3/3.0, 0.5   // even smoother fractures...
 #else
     4, 6, 0.4, 0.4/2.5, 0.9
 #endif
@@ -63,7 +64,7 @@ Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double dens
     Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::dvec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,fracture);
     fragment0->calculateBoundingBox();
    // view->addGeometry(fragment0);
-    fragments.push(fragment0);
+    fragments.push_back(fragment0);
     actualparts++;
     
     //get the vertices reversed
@@ -73,7 +74,7 @@ Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double dens
     Fragment* fragment1 = new Fragment(view->getVertexArrayID(), glm::dvec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,thevertices);
     fragment1->calculateBoundingBox();
 //    view->addGeometry(fragment1);
-    fragments.push(fragment1);
+    fragments.push_back(fragment1);
     actualparts++;
 }
 
@@ -84,11 +85,23 @@ Fragmenter::~Fragmenter() {
 
 int  Fragmenter::fragment()
 {
-    while(actualparts<numparts) {
+    while (actualparts < numparts) {
    
         std::vector<glm::dvec3> result1, result2;
 
-        
+#if 1
+        // Enable this to switch to a "largest-first" splitting strategy...
+        {
+            std::vector<double>  areas(fragments.size(), 0.0);
+            std::transform(fragments.begin(), fragments.end(), areas.begin(),
+                           [](const Fragment *f){ return spherePolyArea(f->getVerticesD()); });
+            auto  maxFragIt = fragments.begin();
+            std::advance(maxFragIt, std::distance(areas.begin(), std::max_element(areas.begin(), areas.end())));
+            auto  maxFrag = *maxFragIt;
+            fragments.erase(maxFragIt);
+            fragments.push_front(maxFrag);
+        }
+#endif
     
 
         //try this cut and if it works add the two parts
@@ -96,19 +109,19 @@ int  Fragmenter::fragment()
             //remove the last fragment on the queue as we have now dealt with this
             
 
-            fragments.pop();
+            fragments.pop_front();
             //display the fragments on screen
             glm::vec3 colorran = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
 
 
             //create the two new fragments
             Fragment* newfrag1 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result1);
-            fragments.push(newfrag1);
+            fragments.push_back(newfrag1);
             
 
 
             Fragment* newfrag2 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result2);
-            fragments.push(newfrag2);
+            fragments.push_back(newfrag2);
             actualparts+=1;
             
 
@@ -255,28 +268,16 @@ int  Fragmenter::testFragment(std::vector<glm::dvec3> jline)
 
 int  Fragmenter::createPolytope()
 {
-    std::queue<Fragment*> tmpqueue = fragments;
-    
     int counterfile=0;
-    while (!tmpqueue.empty())
-    {
-        Fragment* fragment = tmpqueue.front();
+    for (const auto &fragment : fragments)
         fragment->createSTLwithlargecones(counterfile++);
-        tmpqueue.pop();
-
-    }
     return 1;
 }
 
 void  Fragmenter::listAllFragments()
 {
-    std::queue<Fragment*> tmpqueue = fragments;
-    while (!tmpqueue.empty())
-    {
-        view->addGeometry(tmpqueue.front());
-
-        tmpqueue.pop();
-    }
+    for (const auto &fragment : fragments)
+        view->addGeometry(fragment);
 }
 
 bool  Fragmenter::computeIntersection(glm::dvec3 poly1p1, glm::dvec3 poly1p2, glm::dvec3 poly2p1, glm::dvec3 poly2p2, glm::dvec3& intersectionpoint)
