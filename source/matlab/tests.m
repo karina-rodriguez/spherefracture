@@ -3,7 +3,7 @@ function tests
 close all;
 %fractaltest;
 
-if 0
+if 1
     if 1
         pool = { spherePolyRandomFracture() };
     else
@@ -15,15 +15,15 @@ else
     pool = { start_poly.poly };
     clear start_poly;
 end
-if 1
+if 0
     poly = pool{1};
     save('latest_start_poly.mat', 'poly');
     clear poly;
 end
 
-%pool{end+1} = fliplr(pool{1});
-plotPool(pool);
-return;
+pool{end+1} = fliplr(pool{1});
+%plotPool(pool);
+%return;
 if 0
     %fracture = spherePolyRandomFracture();
     fracture = pool{1}([2,3,1],:);

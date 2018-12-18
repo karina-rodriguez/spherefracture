@@ -444,7 +444,7 @@ void Fragment::createSTLwithlargecones(int counterfile){
     std::vector<glm::vec3> normalspolytope;
     
 
-    const glm::vec3 centroidfurthestplane = getFurthestPlane().centroid;
+ /*   const glm::vec3 centroidfurthestplane = getFurthestPlane().centroid;
     const glm::vec3 centroidclosestplane = getClosestPlane().centroid;
     //**********************top part**********************
     for (int n=0;n<vertices.size()-1;n++){
@@ -489,6 +489,7 @@ void Fragment::createSTLwithlargecones(int counterfile){
     normalspolytope.push_back(glm::vec3(0,0,1));*/
     
     //**********************bottom part**********************
+   int h = 0;
    for (int n=0;n<vertices.size()-1;n++){
 
         glm::vec3 pos1 = vertices[n];
@@ -500,7 +501,7 @@ void Fragment::createSTLwithlargecones(int counterfile){
         //add the centroid
         //add as well the two vertices next two each other
         verticespolytope.push_back(pos1);
-        verticespolytope.push_back(glm::vec3(0,0,0));
+        verticespolytope.push_back(glm::vec3(0.0,0.0,0.0));
         verticespolytope.push_back(pos2);
        
        
@@ -512,9 +513,12 @@ void Fragment::createSTLwithlargecones(int counterfile){
        normalspolytope.push_back(norm);
        normalspolytope.push_back(norm);
        
+       
+    //   if (h++==1) break;
+       
     }
 
-    //add the last point and the one at the begining
+    /*//add the last point and the one at the begining
     glm::vec3 posi1 = vertices[vertices.size()-1];
     glm::vec3 posi2 = vertices[0];
     verticespolytope.push_back(posi1);
@@ -526,7 +530,7 @@ void Fragment::createSTLwithlargecones(int counterfile){
     normalspolytope.push_back(normi);
     normalspolytope.push_back(normi);
     normalspolytope.push_back(normi);
-   
+   */
 
 
 

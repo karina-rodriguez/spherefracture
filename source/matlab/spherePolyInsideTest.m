@@ -5,7 +5,7 @@ if size(point,2) > 1
         b(i) = spherePolyInsideTest(poly, point(:,i));
     end
 else
-    if 1
+    if 0
         % [ STILL UNDER DEVELOPMENT ]
         
         % New method, this time relying on Steorographic Project / Riemann
