@@ -8,6 +8,8 @@ const int Fragmenter::evalPoints = 2;
 Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
 #if 0
     3, 7, 0.28, 0.28/3.0, 0.9
+#elif 1
+    6, 6, 0.3, 0.3/3.0, 0.85
 #else
     4, 6, 0.4, 0.4/2.5, 0.9
 #endif
@@ -360,7 +362,11 @@ bool  Fragmenter::tryCut(const std::vector<glm::dvec3> &fragment,
     assertNoRepeat(fracture);
     
     double  originalArea = spherePolyArea(fragment);
+<<<<<<< HEAD
 //    std::cout << "originalArea " << originalArea << std::endl;
+=======
+    //std::cout << "originalArea " << originalArea << std::endl;
+>>>>>>> b224b995e79ad52497d6f22ecce1e616d5f0c33e
 
     if (spherePolyIntersect(fragment, fracture, result1)) {
         
@@ -373,14 +379,14 @@ bool  Fragmenter::tryCut(const std::vector<glm::dvec3> &fragment,
             
             double  area1 = spherePolyArea(result1);
             assertNoNan(area1);
-            std::cout << "area1 " << area1 << std::endl;
+            //std::cout << "area1 " << area1 << std::endl;
 
             double  area2 = spherePolyArea(result2);
             assertNoNan(area2);
-            std::cout << "area2 " << area2 << std::endl;
+            //std::cout << "area2 " << area2 << std::endl;
 
             double  totalArea = area1 + area2;
-            std::cout << "totalArea " << totalArea << std::endl;
+            //std::cout << "totalArea " << totalArea << std::endl;
 
             double  relAreaErr = 2.0 * fabs(totalArea - originalArea) / (totalArea + originalArea);
             assertNoNan(relAreaErr);
@@ -409,9 +415,9 @@ std::vector<glm::dvec3>  Fragmenter::spherePolyRandomFracture(const RandomFractu
         poly.reserve(opt.m);
         const double  f = 2.0 * M_PI / opt.m;
         for (int i=0; i<opt.m; ++i) {
-            glm::dvec3  v((float)(f*i + f*opt.jitter * randSigned()),
-                         (float)(f*opt.amplitude * randSigned()),
-                         0.f);
+            glm::dvec3  v(f*i + f*opt.jitter * randSigned(),
+                         f*opt.amplitude * randSigned(),
+                         0.0);
             poly.push_back(A * glm::dvec3(cos(v.x)*cos(v.y), sin(v.x)*cos(v.y), sin(v.y)));
         }
     }
@@ -571,11 +577,20 @@ bool  Fragmenter::spherePolyIntersect(const std::vector<glm::dvec3> &poly1,
         //if (curPoly == 0 && idx == 0)
         //    break;
     }
+#if 0
     std::cerr << "vertex counts of poly1, poly2 and result: " << poly1.size() << ", " << poly2.size() << ", " << result.size() << ", " << std::endl;
     assert(iterations > 0 && "maximum iteration count exceeded"); // catch "inifinite" loop
+    assertNoRepeat(result);
+#else
+    // For now, just call it "unsuccessful" and let caller of tryCut() find another randomg polygon that works...
+    if (anyRepeat(result)) {
+        std::cerr << "spherePolyIntersect() produces repeated vertices for this input, so for now just returning 'no cut'...\n";
+        result.clear();
+        return false;
+    }
+#endif
 
     assertNoNan(result);
-    assertNoRepeat(result);
 
     //std::cout << str(result) << std::endl;
     return !noCut && result.size() > 0;
