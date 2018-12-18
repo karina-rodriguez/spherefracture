@@ -22,14 +22,14 @@ Fragment::Fragment(GLuint vertexarrayIDT,
 {
  
     
-   /* vertices.push_back(glm::vec3(-0.5, 0, 0));
-    vertices.push_back(glm::vec3(0.5, 0, 0));
-    vertices.push_back(glm::vec3(0, 1, 0));
+   /* vertices.push_back({-0.5, 0, 0});
+    vertices.push_back({0.5, 0, 0});
+    vertices.push_back({0, 1, 0});
     */
     vertices = std::vector<glm::vec3>(verticest.begin(), verticest.end());
     colors = std::vector<glm::vec3>(vertices.size(), colour);
     for (int i=0;i<vertices.size();i++){
-        //        normals.push_back(glm::vec3(0.0, 0.0, 10.0));
+        //        normals.push_back({0.0, 0.0, 10.0});
         normals.push_back(vertices[i]-glm::vec3(0,0,0));
         
     }
@@ -81,7 +81,7 @@ int Fragment::createPlanes(const std::vector<glm::dvec3> vertices, const double 
     
    // std::cout << "sum: " << sum.x << ", " << sum.y << ", " << sum.z << std::endl;
   
-    glm::dvec3 centroid = glm::dvec3(sum.x/ vertices.size(), sum.y/ vertices.size(), sum.z/ vertices.size());
+    glm::dvec3 centroid = (1.0/vertices.size()) * sum;
     
     
     // Calc full 3x3 covariance matrix, excluding symmetries:
@@ -205,7 +205,6 @@ Plane Fragment::getFurthestPlane(){
 /*
  *
  * Simply computes the rotation required for facing the XY plane
- 
  *
  */
 glm::mat4 Fragment::getTransformationForPolygoninXYPlane(Plane theplane){
@@ -213,7 +212,7 @@ glm::mat4 Fragment::getTransformationForPolygoninXYPlane(Plane theplane){
     glm::vec3 normal = theplane.normal;
     glm::vec3 centroid = theplane.centroid;
 
-    glm::vec3 targetaxis = glm::vec3(0,0,1);
+    glm::vec3 targetaxis = {0,0,1};
     //find the axis of rotation through the cross-product of the two normals
     glm::vec3 axisofrotation = glm::cross(targetaxis,glm::normalize(normal));
     
@@ -229,6 +228,7 @@ glm::mat4 Fragment::getTransformationForPolygoninXYPlane(Plane theplane){
     
     
 }
+
 //! Function to create an STL file for the fragment
 /*
  *
@@ -299,7 +299,7 @@ void Fragment::createSTL(int counterfile){
         verticespolytope.push_back(pos2);
         
         //add the normal of the triangle
-        glm::vec3 norm = glm::cross(glm::vec3(pos1-centroidfurthestplane),glm::vec3(pos2-centroidfurthestplane));
+        glm::vec3 norm = glm::cross(pos1-centroidfurthestplane, pos2-centroidfurthestplane);
         normalspolytope.push_back(norm);
         normalspolytope.push_back(norm);
         normalspolytope.push_back(norm);
@@ -315,7 +315,7 @@ void Fragment::createSTL(int counterfile){
     verticespolytope.push_back(pos2);
     
     //add the normal of the triangle
-    glm::vec3 norm = glm::cross(glm::vec3(pos1-centroidfurthestplane),glm::vec3(pos2-centroidfurthestplane));
+    glm::vec3 norm = glm::cross(pos1-centroidfurthestplane, pos2-centroidfurthestplane);
     normalspolytope.push_back(norm);
     normalspolytope.push_back(norm);
     normalspolytope.push_back(norm);
@@ -336,7 +336,7 @@ void Fragment::createSTL(int counterfile){
 /*    glm::vec4 cp(getFurthestPlane().centroid.x,getFurthestPlane().centroid.y,getFurthestPlane().centroid.z,1);
     glm::mat4 trans = getTransformationForPolygoninXYPlane(getFurthestPlane());
     glm::vec4 newcentroid = cp*trans;
-    farplanepointstodraw.push_back(glm::vec3(newcentroid.x,newcentroid.y,newcentroid.z));
+    farplanepointstodraw.push_back(newcentroid);
  //       std::cout <<  "centroid: " <<   newcentroid.z  << std::endl;
     
     farplanepointstodraw1.push_back(getFurthestPlane().centroid);
@@ -351,7 +351,7 @@ void Fragment::createSTL(int counterfile){
         std::cout <<  p.x << " " <<  p.y << " "  << p.z << " "   << std::endl;
 
       //  glm::vec4 newp = p*trans;
-       // farplanepointstodraw.push_back(glm::vec3(newp.x,newp.y,newp.z));
+       // farplanepointstodraw.push_back(newp);
         //farplanepointstodraw1.push_back(farplanepoints[n]);
         //farpolygon.push_back(Point_2(newp.x, newp.y));
 
@@ -362,13 +362,13 @@ void Fragment::createSTL(int counterfile){
     
      std::cout <<  "&&&&&&&"   << std::endl;
 
-    for (int n=0;n<farplanepoints.size();n++){
+    for (int n=0;n<farplanepoints.size();n++) {
         
         glm::vec4 p(farplanepoints[n].x,farplanepoints[n].y,farplanepoints[n].z,1);
       //  std::cout <<  p.x << " " <<  p.y << " "  << p.z << " "   << std::endl;
         
         glm::vec4 newp = p*trans;
-        farplanepointstodraw.push_back(glm::vec3(newp.x,newp.y,newp.z));
+        farplanepointstodraw.push_back(newp);
         farplanepointstodraw1.push_back(farplanepoints[n]);
         farpolygon.push_back(Point_2(newp.x, newp.y));
         
@@ -469,7 +469,7 @@ void Fragment::createSTLwithlargecones(int counterfile){
         verticespolytope.push_back(pos2);
         
         //add the normal of the triangle
-        glm::vec3 norm = glm::cross(glm::vec3(centroidfurthestplane-pos1),glm::vec3(centroidfurthestplane-pos2));
+        glm::vec3 norm = glm::cross(centroidfurthestplane-pos1, centroidfurthestplane-pos2);
         normalspolytope.push_back(norm);
         normalspolytope.push_back(norm);
         normalspolytope.push_back(norm);
@@ -484,20 +484,20 @@ void Fragment::createSTLwithlargecones(int counterfile){
     verticespolytope.push_back(pos2);
     
     //add the normal of the triangle
-    glm::vec3 norm = glm::cross(glm::vec3(pos1-centroidfurthestplane),glm::vec3(pos2-centroidfurthestplane));
+    glm::vec3 norm = glm::cross(pos1-centroidfurthestplane, pos2-centroidfurthestplane);
     normalspolytope.push_back(norm);
     normalspolytope.push_back(norm);
     normalspolytope.push_back(norm);
 
   
     
-/*    verticespolytope.push_back(glm::vec3(1,0,0));
-    verticespolytope.push_back(glm::vec3(0,0,0));
-    verticespolytope.push_back(glm::vec3(0,1,0));
+/*    verticespolytope.push_back({1,0,0});
+    verticespolytope.push_back({0,0,0});
+    verticespolytope.push_back({0,1,0});
     
-    normalspolytope.push_back(glm::vec3(0,0,1));
-    normalspolytope.push_back(glm::vec3(0,0,1));
-    normalspolytope.push_back(glm::vec3(0,0,1));*/
+    normalspolytope.push_back({0,0,1});
+    normalspolytope.push_back({0,0,1});
+    normalspolytope.push_back({0,0,1});*/
     
     //**********************bottom part**********************
    for (int n=0;n<vertices.size()-1;n++){
@@ -511,12 +511,12 @@ void Fragment::createSTLwithlargecones(int counterfile){
         //add the centroid
         //add as well the two vertices next two each other
         verticespolytope.push_back(pos1);
-        verticespolytope.push_back(glm::vec3(0,0,0));
+        verticespolytope.push_back({0,0,0});
         verticespolytope.push_back(pos2);
        
        
        //add the normal of the triangle
-       glm::vec3 norm = glm::cross(glm::vec3(pos2),glm::vec3(pos1));
+       glm::vec3 norm = glm::cross(pos2, pos1);
        
        //std::cout << "Normal: " << str(norm) << std::endl;
        normalspolytope.push_back(norm);
@@ -529,11 +529,11 @@ void Fragment::createSTLwithlargecones(int counterfile){
     glm::vec3 posi1 = vertices[vertices.size()-1];
     glm::vec3 posi2 = vertices[0];
     verticespolytope.push_back(posi1);
-    verticespolytope.push_back(glm::vec3(0,0,0));
+    verticespolytope.push_back({0,0,0});
     verticespolytope.push_back(posi2);
     
     //add the normal of the triangle
-    glm::vec3 normi = -glm::cross(glm::vec3(posi2),glm::vec3(posi1));
+    glm::vec3 normi = -glm::cross(posi2, posi1);
     normalspolytope.push_back(normi);
     normalspolytope.push_back(normi);
     normalspolytope.push_back(normi);
