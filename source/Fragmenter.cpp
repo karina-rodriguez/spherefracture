@@ -387,9 +387,11 @@ bool  Fragmenter::tryCut(const std::vector<glm::dvec3> &fragment,
             std::cout << "relAreaErr " << relAreaErr << std::endl;
 
             
-                
+            
                 return (relAreaErr < 1e-5 &&                                       // single pieces, please
-                        std::max(area1 / area2, area2 / area1) < 4.0);  // maximum area ratio
+                        std::max(area1 / area2, area2 / area1) < 4.0) ; // maximum area ratio
+                    
+                  //  return checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2);
         
         }
     }
@@ -695,7 +697,7 @@ bool Fragmenter::checkFragmentSizeSuitable(const std::vector<glm::dvec3> poly){
     
     
     return
-    sqrt(ms.squared_radius())<0.8 &&      //check the fragment is not too big
+    sqrt(ms.squared_radius())<0.9 &&      //check the fragment is not too big
         (inside(Point_3(0,0,0))!=CGAL::ON_BOUNDED_SIDE);     //check the origin is not inside the fragment
     
 }
