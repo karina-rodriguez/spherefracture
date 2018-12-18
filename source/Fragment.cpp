@@ -447,15 +447,14 @@ void Fragment::createSTLwithlargecones(int counterfile){
     //create the planes for intersection, one near the centre, the other far away from the radius of the sphere
     createPlanes(getVerticesD(), closestvalue, furtherstvalue);
     
-    //std::cout << "**** " << glm::degrees(acos(glm::dot(maxdistancecentroidfragmentvertex,plane.centroid))) << std::endl;
     
-    std::vector<glm::vec3> verticespolytope;
+    std::vector<glm::dvec3> verticespolytope;
     std::vector<int> indicespolytope;
-    std::vector<glm::vec3> normalspolytope;
+    std::vector<glm::dvec3> normalspolytope;
     
 
- /*   const glm::vec3 centroidfurthestplane = getFurthestPlane().centroid;
-    const glm::vec3 centroidclosestplane = getClosestPlane().centroid;
+    const glm::vec3 centroidfurthestplane = getFurthestPlane().centroid;
+ //   const glm::vec3 centroidclosestplane = getClosestPlane().centroid;
     //**********************top part**********************
     for (int n=0;n<vertices.size()-1;n++){
        glm::vec3 pos1 = vertices[n];
@@ -499,11 +498,10 @@ void Fragment::createSTLwithlargecones(int counterfile){
     normalspolytope.push_back({0,0,1});*/
     
     //**********************bottom part**********************
-   int h = 0;
    for (int n=0;n<vertices.size()-1;n++){
 
-        glm::vec3 pos1 = vertices[n];
-        glm::vec3 pos2 = vertices[n+1];
+        glm::dvec3 pos1 = vertices[n];
+        glm::dvec3 pos2 = vertices[n+1];
        
 
         //std::cout << "pos1: " << str(pos1) << std::endl;
@@ -517,7 +515,7 @@ void Fragment::createSTLwithlargecones(int counterfile){
        
        
        //add the normal of the triangle
-       glm::vec3 norm = glm::cross(pos2, pos1);
+       glm::dvec3 norm = glm::cross(pos2, pos1);
        
 
        //std::cout << "Normal: " << str(norm) << std::endl;
@@ -526,11 +524,10 @@ void Fragment::createSTLwithlargecones(int counterfile){
        normalspolytope.push_back(norm);
        
        
-    //   if (h++==1) break;
        
     }
 
-    /*//add the last point and the one at the begining
+    //add the last point and the one at the begining
     glm::vec3 posi1 = vertices[vertices.size()-1];
     glm::vec3 posi2 = vertices[0];
     verticespolytope.push_back(posi1);
@@ -542,7 +539,6 @@ void Fragment::createSTLwithlargecones(int counterfile){
     normalspolytope.push_back(normi);
     normalspolytope.push_back(normi);
     normalspolytope.push_back(normi);
-   */
 
 
 

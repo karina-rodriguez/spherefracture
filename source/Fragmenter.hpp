@@ -75,8 +75,7 @@ public:
 
     static bool  computeIntersection(glm::dvec3 poly1p1, glm::dvec3 poly1p2, glm::dvec3 poly2p1, glm::dvec3 poly2p2,glm::dvec3& intersectionpoint);
     static bool checkFragmentSizeSuitable(const std::vector<glm::dvec3> poly);
-    static bool checkAtLeastPointsHitFragment(const int numpoints,const std::vector<std::vector<glm::dvec3>> points, const std::vector<glm::dvec3> poly);
-    static void removePointsForThisFragment(const int elem);
+    static bool checkAtLeastPointsHitFragment(const int numpoints, std::vector<std::vector<glm::dvec3>> &points, const std::vector<glm::dvec3> poly);
 
     
     // Tim's implementation:

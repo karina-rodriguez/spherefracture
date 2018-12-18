@@ -700,7 +700,7 @@ bool Fragmenter::checkFragmentSizeSuitable(const std::vector<glm::dvec3> poly){
     
 }
 
-bool Fragmenter::checkAtLeastPointsHitFragment(const int numpoints,const std::vector<std::vector<glm::dvec3>> points,const std::vector<glm::dvec3> poly){
+bool Fragmenter::checkAtLeastPointsHitFragment(const int numpoints, std::vector<std::vector<glm::dvec3>> &points,const std::vector<glm::dvec3> poly){
 
     for (int i=0;i<points.size();i++){
         
