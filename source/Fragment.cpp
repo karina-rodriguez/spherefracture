@@ -1,24 +1,33 @@
 #include "Fragment.hpp"
 
-template <typename T>
+// [TW:] The following definition returned references into the stack,
+// which is why I replaced it by an alternative definition...
+/* template <typename T>
 inline T const& max (T const& a, T const& b, T const& c) {
-    
     double maxv = ( a < b ) ? b : a;
     return ( ( maxv < c ) ? c : maxv );
- }
+    } */
+// ... and here is that alternative definition:
+template <typename T>
+inline T const& max (T const& a, T const& b, T const& c) { return std::max(std::max(a, b), c); }
+
 const double  Fragment::epsilon = 1e-6;
 
-Fragment::Fragment(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, std::vector<glm::vec3> verticest): Geometry(vertexarrayIDT,colour,primitive, type) {
+Fragment::Fragment(GLuint vertexarrayIDT,
+                   glm::vec3 colour,
+                   GLenum primitive,
+                   geo_type type,
+                   std::vector<glm::dvec3> verticest)
+    : Geometry(vertexarrayIDT,colour,primitive, type)
+{
  
     
    /* vertices.push_back(glm::vec3(-0.5, 0, 0));
     vertices.push_back(glm::vec3(0.5, 0, 0));
     vertices.push_back(glm::vec3(0, 1, 0));
     */
-    vertices = verticest;
-    for (int i=0;i<vertices.size();i++){
-        colors.push_back(colour);
-    }
+    vertices = std::vector<glm::vec3>(verticest.begin(), verticest.end());
+    colors = std::vector<glm::vec3>(vertices.size(), colour);
     for (int i=0;i<vertices.size();i++){
         //        normals.push_back(glm::vec3(0.0, 0.0, 10.0));
         normals.push_back(vertices[i]-glm::vec3(0,0,0));
@@ -49,7 +58,7 @@ Fragment::~Fragment() {
 //! Create a plane defined by a point and a normal.
 /*
  *
- *  Returns true if function succed, and populate the centroid and normal
+ *  Returns true if function succeeds, and populate the centroid and normal
  *  of the plane
  *  Code based on: https://www.ilikebigbits.com/2015_03_04_plane_from_points.html
  *  Main modifications include the generation of 3 planes: one which fits the vertices, a
@@ -57,14 +66,14 @@ Fragment::~Fragment() {
  *
  *
  */
-int Fragment::createPlanes(const std::vector<glm::vec3> vertices, const double close, const double far){
+int Fragment::createPlanes(const std::vector<glm::dvec3> vertices, const double close, const double far){
    
-   // std::vector<glm::vec3> vertices = getVertices();
+   // std::vector<glm::dvec3> vertices = getVertices();
 
     //at least 3 points required
     if  (vertices.size()< 3)
         return 0;
-    glm::vec3 sum(0.0, 0.0, 0.0);
+    glm::dvec3 sum(0.0, 0.0, 0.0);
     
     for (int i=0;i<vertices.size();i++) {
         sum += vertices[i];
@@ -72,7 +81,7 @@ int Fragment::createPlanes(const std::vector<glm::vec3> vertices, const double c
     
    // std::cout << "sum: " << sum.x << ", " << sum.y << ", " << sum.z << std::endl;
   
-    glm::vec3 centroid = glm::vec3(sum.x/ vertices.size(), sum.y/ vertices.size(), sum.z/ vertices.size());
+    glm::dvec3 centroid = glm::dvec3(sum.x/ vertices.size(), sum.y/ vertices.size(), sum.z/ vertices.size());
     
     
     // Calc full 3x3 covariance matrix, excluding symmetries:
@@ -84,7 +93,7 @@ int Fragment::createPlanes(const std::vector<glm::vec3> vertices, const double c
     double zz = 0.0;
    
     for (int i=0;i<vertices.size();i++) {
-        glm::vec3 r = vertices[i] - centroid;
+        glm::dvec3 r = vertices[i] - centroid;
         double distance = glm::distance(vertices[i],centroid);
         
       //  std::cout << "distance: " << distance << std::endl;
@@ -113,18 +122,18 @@ int Fragment::createPlanes(const std::vector<glm::vec3> vertices, const double c
     }
     
     // Pick path with best conditioning:
-    glm::vec3 dir;
-    if (det_max == det_x) dir = glm::vec3(det_x, xz*yz - xy*zz,xy*yz - xz*yy);
+    glm::dvec3 dir;
+    if (det_max == det_x) dir = glm::dvec3(det_x, xz*yz - xy*zz,xy*yz - xz*yy);
     else{
-        if (det_max == det_y) dir = glm::vec3(xz*yz - xy*zz, det_y, xy*xz - yz*xx);
+        if (det_max == det_y) dir = glm::dvec3(xz*yz - xy*zz, det_y, xy*xz - yz*xx);
         else {
-            dir = glm::vec3( xy*yz - xz*yy,xy*xz - yz*xx, det_z);
+            dir = glm::dvec3( xy*yz - xz*yy,xy*xz - yz*xx, det_z);
         }
     }
     
 
-    glm::vec3 norm = glm::normalize(dir);
-    glm::vec3 normcentroid = glm::normalize(centroid);
+    glm::dvec3 norm = glm::normalize(dir);
+    glm::dvec3 normcentroid = glm::normalize(centroid);
 
     //std::cout << "centroid: " << centroid.x << ", " << centroid.y << ", " << centroid.z << std::endl;
     //std::cout << "normcentroid: " << normcentroid.x << ", " << normcentroid.y << ", " << normcentroid.z << std::endl;
@@ -135,11 +144,11 @@ int Fragment::createPlanes(const std::vector<glm::vec3> vertices, const double c
 
     //create a plane with the normal and centroid
     plane = {norm, centroid};
-    glm::vec3 centroidclosesttocentre(normcentroid.x*close,
+    glm::dvec3 centroidclosesttocentre(normcentroid.x*close,
                     normcentroid.y*close,normcentroid.z*close);
     closestplane = {norm, centroidclosesttocentre};
     
-    glm::vec3 centroidfurthesttocentre(normcentroid.x*far,
+    glm::dvec3 centroidfurthesttocentre(normcentroid.x*far,
                     normcentroid.y*far,normcentroid.z*far);
     furthestplane = {norm, centroidfurthesttocentre};
 
@@ -155,12 +164,13 @@ int Fragment::createPlanes(const std::vector<glm::vec3> vertices, const double c
  *  It also makes the assumption that the line is made by the point in the fragment
  *  and the centre of the sphere which is (0,0,0)
 */
-int Fragment::checkIntersectionwithPlane(glm::vec3 point, Plane plane, glm::vec3& result){
+int Fragment::checkIntersectionwithPlane(glm::dvec3 point, Plane plane, glm::dvec3& result)
+{
     double lambda;
  
     //the initial point is (0,0,0) as we take the centre of the sphere for the vector
     //which defines the line for intersection
-    static const glm::vec3 p0(0,0,0);
+    static const glm::dvec3 p0(0,0,0);
     //check that the lines are not parallel to each other
     if ((glm::dot(point,plane.normal)>epsilon)
         ||(glm::dot(point,plane.normal)<epsilon)){
@@ -176,7 +186,7 @@ int Fragment::checkIntersectionwithPlane(glm::vec3 point, Plane plane, glm::vec3
         return 0;
         
     }
-    result = glm::vec3((point.x*lambda)+point.x,(point.y*lambda)+point.y,(point.z*lambda)+point.z);
+    result = lambda * point + point;
    // result = point;
     return 1;
     
@@ -239,7 +249,7 @@ void Fragment::createSTL(int counterfile){
 
     //view->addGeometry(tmpqueue.front());
     //create the planes for intersection, one near the centre, the other far away from the radius of the sphere
-    createPlanes(getVertices(), closestvalue, furtherstvalue);
+    createPlanes(getVerticesD(), closestvalue, furtherstvalue);
 
     
    /* for (int n=0;n<getVertices().size();n++){
@@ -436,7 +446,7 @@ void Fragment::createSTLwithlargecones(int counterfile){
     
     //view->addGeometry(tmpqueue.front());
     //create the planes for intersection, one near the centre, the other far away from the radius of the sphere
-    createPlanes(getVertices(), closestvalue, furtherstvalue);
+    createPlanes(getVerticesD(), closestvalue, furtherstvalue);
     
     //std::cout << "**** " << glm::degrees(acos(glm::dot(maxdistancecentroidfragmentvertex,plane.centroid))) << std::endl;
     

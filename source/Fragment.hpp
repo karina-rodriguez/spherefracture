@@ -44,8 +44,8 @@ typedef Polygon_2::Vertex_iterator VertexIterator;
  typedef Point_set::Property_map<FT> FT_map;*/
 
 struct Plane{
-    glm::vec3 normal;
-    glm::vec3 centroid;
+    glm::dvec3 normal;
+    glm::dvec3 centroid;
     
 };
 class Fragment : public Geometry {
@@ -58,21 +58,21 @@ private:
     Plane closestplane;
     Plane furthestplane;
     //stores the points of the planar polygons close and far from the centre
-    std::vector<glm::vec3> closeplanepoints;
-    std::vector<glm::vec3> farplanepoints;
+    std::vector<glm::dvec3> closeplanepoints;
+    std::vector<glm::dvec3> farplanepoints;
     double maxdistancecentroidfragment;
-    glm::vec3 maxdistancecentroidfragmentvertex;
+    glm::dvec3 maxdistancecentroidfragmentvertex;
 
 
     static const double  epsilon;
 
 public:
-    std::vector<glm::vec3> farplanepointstodraw1;
-    std::vector<glm::vec3> farplanepointstodraw;
-    Fragment(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, std::vector<glm::vec3> verticest);
+    std::vector<glm::dvec3> farplanepointstodraw1;
+    std::vector<glm::dvec3> farplanepointstodraw;
+    Fragment(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, std::vector<glm::dvec3> verticest);
     ~Fragment();
-    int createPlanes(const std::vector<glm::vec3> vertices, const double close,  const double far);
-    int checkIntersectionwithPlane(glm::vec3 point, Plane plane, glm::vec3& result);
+    int createPlanes(const std::vector<glm::dvec3> vertices, const double close,  const double far);
+    int checkIntersectionwithPlane(glm::dvec3 point, Plane plane, glm::dvec3& result);
     Plane getPlane();
     Plane getClosestPlane();
     Plane getFurthestPlane();

@@ -24,8 +24,8 @@ std::string  str(const T &val) {
     return std::to_string(val);
 }
 
-template<>
-std::string  str(const glm::vec3 &val) {
+template<typename T>
+std::string  str(const glm::tvec3<T> &val) {
     char  s[1024];
     sprintf(s, "[%g; %g; %g]", val.x, val.y, val.z);  // output follows Matlab convention for easier copy-and-paste
     return std::string(s);
@@ -49,8 +49,8 @@ bool  anyIsnan(const T &val) {
     return std::isnan(val);
 }
 
-template<>
-bool  anyIsnan(const glm::vec3 &v) {
+template<typename T>
+bool  anyIsnan(const glm::tvec3<T> &v) {
     return (std::isnan(v.x) || std::isnan(v.y) || std::isnan(v.z));
 }
 
