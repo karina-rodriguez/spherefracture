@@ -3,15 +3,15 @@ import os
 import random
 import subprocess
 
-totalexamples=2
+totalexamples=5
 numparts=0
-thefiles=['tocutUSETHISFORPUZZLE_10K_poisson.stl']
+thefiles=['ambercuppoisson_100K.stl']
 
 
 for file in thefiles:
 	print(file)
 	# create 2 example of puzzle fragmented spheres
-	for x in range(1, totalexamples):
+	for x in range(0, totalexamples):
 		generatedpiece=0;
 		while(generatedpiece==0):
 			# do between 7 and 14 parts
@@ -30,8 +30,8 @@ for file in thefiles:
 
 		#for each fragment piece, intersect with the 3D model
 		resultfolder='result/'+file+'_puzzle'+str(x)
-		#os.system('mkdir '+resultfolder)	
-		for piece in range (0, numparts):
+		os.system('mkdir '+resultfolder)	
+		for piece in range (0, numparts+1):
 			print("I will break the piece: "+str(piece))
 			openscadcmd = 'openscad -D \'file="geometry/'+file+'"\' -D num='+str(piece)+' -o '+resultfolder+'/puzzlpiece_'+str(piece)+'.stl puzzlepieces.scad'
 			print(openscadcmd)
