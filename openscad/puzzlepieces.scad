@@ -10,8 +10,7 @@ num=0;       // must be initalized
      intersection(){
         name = str("fragmentsphere/fragment_", a, ".stl");
         scale(600)
-        rotate([-18,-135,-5])
-        import(file=name, centre=true);
+       import(file=name, centre=true);
      
      
       //  rotate([-7,-30,10])
@@ -20,8 +19,12 @@ num=0;       // must be initalized
        // import("geometry/ambercuppoisson_100K.stl");
      
      
-        translate([2,-7,4])
-        scale(25)
+        //transformation for amber cup
+        //rotate([-7,-30,10])
+        //translate([10,0,-110])
+         //transformation for Saltdeanpot
+        //translate([2,-7,4])
+        //scale(25)
         import(filetouse);
     
     }
@@ -29,3 +32,11 @@ num=0;       // must be initalized
 echo(num);
 echo(file);
 cutPuzzlePiece(num,file);
+/*for (a =[0:6]){
+
+       cutPuzzlePiece(a,"geometry/elephantreconstructedsmoothclean125KWith7mmthickness.stl");
+
+
+}*/
+
+ 

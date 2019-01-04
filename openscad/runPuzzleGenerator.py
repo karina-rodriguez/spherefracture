@@ -5,8 +5,9 @@ import subprocess
 
 totalexamples=5
 numparts=0
-thefiles=['ambercuppoisson_100K.stl']
-
+#thefiles=['ambercuppoisson_100K.stl']
+#thefiles=['tocutUSETHISFORPUZZLE_500K_poisson.stl']
+thefiles=['elephantreconstructedsmoothclean125KWith7mmthickness.stl']
 
 for file in thefiles:
 	print(file)
@@ -15,12 +16,11 @@ for file in thefiles:
 		generatedpiece=0;
 		while(generatedpiece==0):
 			# do between 7 and 14 parts
-			numparts = random.randint(7,14)
+			#numparts = random.randint(7,14)
+			numparts = random.randint(5,10)
 			print('Puzzle '+str(x)+' with '+str(numparts)+' parts')
-			breakSphereprogram='/Users/photoscan/workspace/breakSphere/source/breakSphere'
-
-			input='-numparts '+str(numparts)
-			command_run = subprocess.call([breakSphereprogram,input])
+			breakSphereprogram='/Users/photoscan/workspace/breakSphere/source/breakSphere -numparts '+str(numparts)
+			command_run = subprocess.call(breakSphereprogram,shell=True)
 			if command_run == 0:
 				print "Its worked!!"
 				generatedpiece=1
@@ -31,8 +31,9 @@ for file in thefiles:
 		#for each fragment piece, intersect with the 3D model
 		resultfolder='result/'+file+'_puzzle'+str(x)
 		os.system('mkdir '+resultfolder)	
-		for piece in range (0, numparts+1):
+		for piece in range (0, numparts):
 			print("I will break the piece: "+str(piece))
-			openscadcmd = 'openscad -D \'file="geometry/'+file+'"\' -D num='+str(piece)+' -o '+resultfolder+'/puzzlpiece_'+str(piece)+'.stl puzzlepieces.scad'
+			os.system('cp fragmentsphere/fragment_'+str(piece)+'.stl '+resultfolder+'/')
+			openscadcmd = 'openscad -D \'file="geometry/'+file+'"\' -D num='+str(piece)+' -o '+resultfolder+'/puzzlepiece_'+str(piece)+'of'+str(numparts)+'.stl puzzlepieces.scad'
 			print(openscadcmd)
 			os.system(openscadcmd) 
