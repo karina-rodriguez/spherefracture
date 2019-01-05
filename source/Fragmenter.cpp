@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-const double  Fragmenter::epsilon = 1e-6;
+const double  Fragmenter::epsilon = 1e-10;
 const int Fragmenter::evalPoints = 2;
 
 Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
