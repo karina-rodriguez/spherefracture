@@ -7,12 +7,12 @@ const int Fragmenter::evalPoints = 2;
 
 Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
 #if 0
-    3, 7, 0.28, 0.28/3.0, 0.9
+    3, 7, 0.28, 0.28/3.0, 0.9, 0.0
 #elif 1
-    6, 6, 0.3, 0.3/3.0, 0.85
-    //6, 6, 0.3, 0.3/3.0, 0.5   // even smoother fractures...
+    6, 6, 0.3, 0.3/3.0, 0.85, 0.0
+    //6, 6, 0.3, 0.3/3.0, 0.5, 0.0   // even smoother fractures...
 #else
-    4, 6, 0.4, 0.4/2.5, 0.9
+    4, 6, 0.4, 0.4/2.5, 0.9, 0.0
 #endif
 };
 
@@ -452,6 +452,9 @@ std::vector<glm::dvec3>  Fragmenter::spherePolyRandomFracture(const RandomFractu
             amplitude *= opt.decay;
         }
     }
+
+    if (opt.smoothing != 0.0)
+        spherePolySmooth(poly, opt.smoothing);
     
     return poly;
 }
@@ -660,6 +663,33 @@ bool  Fragmenter::spherePolyInsideTest(const std::vector<glm::dvec3> &poly, cons
     
    std::cout << "###### " << floor(0.5 + sum / (2*M_PI)) << std::endl;
     return floor(0.5 + sum / (2*M_PI)) > 0;
+}
+
+//! smoothing of spherical polygon
+/*! \a strength be within 0..1.
+ */
+void  Fragmenter::spherePolySmooth(const std::vector<glm::dvec3> &src, std::vector<glm::dvec3> &dst, double strength)
+{
+    std::vector<double>  f = { 0.054488684549643, 0.244201342003233, 0.402619946894247, 0.244201342003233, 0.054488684549643 };
+    int  m = (int)((f.size()-1)/2);
+    int  n = (int)src.size();
+    dst.resize(src.size());
+    for (int i=0; i<n; ++i) {
+        auto  sum = glm::dvec3(0.,0.,0.);
+        for (int j=0; j<(int)f.size(); ++j)
+            sum += f[j] * src[(i+j-m+n) % n];
+        dst[i] = glm::normalize(sum);
+    }
+}
+
+//! in-place smoothing of spherical polygon
+/*! \a strength be within 0..1.
+ */
+void  Fragmenter::spherePolySmooth(std::vector<glm::dvec3> &poly, double strength)
+{
+    std::vector<glm::dvec3>  dst;
+    spherePolySmooth(poly, dst, strength);
+    poly.swap(dst);
 }
 
 bool Fragmenter::checkFragmentSizeSuitable(const std::vector<glm::dvec3> poly){
