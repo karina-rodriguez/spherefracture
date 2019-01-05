@@ -678,7 +678,7 @@ void  Fragmenter::spherePolySmooth(const std::vector<glm::dvec3> &src, std::vect
         auto  sum = glm::dvec3(0.,0.,0.);
         for (int j=0; j<(int)f.size(); ++j)
             sum += f[j] * src[(i+j-m+n) % n];
-        dst[i] = glm::normalize(sum);
+        dst[i] = glm::normalize((1.0-strength)*src[i] + strength*sum);
     }
 }
 
