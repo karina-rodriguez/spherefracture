@@ -89,7 +89,8 @@ Fragmenter::~Fragmenter() {
 int  Fragmenter::fragment()
 {
     while (actualparts < numparts) {
-   
+        std::cout << "*****actual parts: " << actualparts << " " << numparts << std::endl;
+
         std::vector<glm::dvec3> result1, result2;
 
 #if 1
@@ -103,6 +104,7 @@ int  Fragmenter::fragment()
             auto  maxFrag = *maxFragIt;
             fragments.erase(maxFragIt);
             fragments.push_front(maxFrag);
+
         }
 #endif
     
@@ -126,6 +128,7 @@ int  Fragmenter::fragment()
             Fragment* newfrag2 = new Fragment(view->getVertexArrayID(),colorran,GL_LINE_LOOP,GEO_FRAGMENT, result2);
             fragments.push_back(newfrag2);
             actualparts+=1;
+            std::cout << "*****actual parts: " << actualparts << std::endl;
             
 
         }
@@ -387,17 +390,20 @@ bool  Fragmenter::tryCut(const std::vector<glm::dvec3> &fragment,
 
             double  relAreaErr = 2.0 * fabs(totalArea - originalArea) / (totalArea + originalArea);
             assertNoNan(relAreaErr);
+#if 0
             std::cout << "relAreaErr " << relAreaErr << std::endl;
 
             std::cout << "SUITABLE SIZE: " << std::endl;
 
             std::cout << checkFragmentSizeSuitable(result1) << std::endl;
             std::cout << checkFragmentSizeSuitable(result2) << std::endl;
-
+#endif
                 if (relAreaErr < 1e-5 &&                                       // single pieces, please
                         std::max(area1 / area2, area2 / area1) < 4.0)  // maximum area ratio
                     
-                    return checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2);
+                    return (checkFragmentSizeSuitable(result1)&&checkFragmentSizeSuitable(result2));
+                        
+                        //return ((checkAtLeastPointsHitFragment(2,allPoints,result1))&&(checkAtLeastPointsHitFragment(2,allPoints,result2)));
         
         }
     }
@@ -711,7 +717,7 @@ bool Fragmenter::checkFragmentSizeSuitable(const std::vector<glm::dvec3> poly){
     
     
     return
-    sqrt(ms.squared_radius())<0.75 &&      //check the fragment is not too big
+    sqrt(ms.squared_radius())<0.85 &&      //check the fragment is not too big
         (inside(Point_3(0,0,0))!=CGAL::ON_BOUNDED_SIDE);     //check the origin is not inside the fragment
     
 }
