@@ -36,6 +36,7 @@ public:
         float  jitter;      // relative jitter of midpoint along curve
         float  amplitude;   // relative amplitude
         float  decay;       // relative amplitude/jitter decay per iteration
+        float  smoothing;   // smoothing strength [0..1]
     };
 
     static RandomFractureOptions  defaultRandomFractureOptions;
@@ -91,6 +92,9 @@ public:
     static double  spherePolyAngle(const std::vector<glm::dvec3> &poly, int idx);
 
     static bool  spherePolyInsideTest(const std::vector<glm::dvec3> &poly, const glm::dvec3 &point);
+
+    static void  spherePolySmooth(const std::vector<glm::dvec3> &src, std::vector<glm::dvec3> &dst, double strength=1.0);
+    static void  spherePolySmooth(std::vector<glm::dvec3> &poly, double strength=1.0);
 
     static bool  tests();
 };
