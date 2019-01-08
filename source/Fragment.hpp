@@ -68,9 +68,11 @@ private:
     glm::dvec3 maxdistancecentroidfragmentvertex;
 
 
+    static int seedOrientation;
     static const double  epsilon;
 
 public:
+
     std::vector<glm::dvec3> farplanepointstodraw1;
     std::vector<glm::dvec3> farplanepointstodraw;
     Fragment(GLuint vertexarrayIDT, glm::vec3 colour, GLenum primitive, geo_type type, std::vector<glm::dvec3> verticest);
@@ -83,7 +85,7 @@ public:
     glm::mat4 getTransformationForPolygoninXYPlane(Plane theplane);
     void createSTL(int counterfile);
     void createSTLwithlargecones(int counterfile);
-        
+    static void setSeedOrientation(const int&  seed);
     
 
 };

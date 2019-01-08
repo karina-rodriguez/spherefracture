@@ -37,10 +37,21 @@ float maxpeak=0;
 int numparts=0;
 int lines=0;
 int steps=0;
+int seedLine=0;
+int seedOrientation=0;
 std::string ofile="";
+int    m=6;           // initial vertex count; must be m>=3
+float  niter=6;       // number of fractal iterations
+float  jitter=0.3;      // relative jitter of midpoint along curve
+float  amplitude=0.1;   // relative amplitude
+float  decay=0.85;       // relative amplitude/jitter decay per iteration
+float  smoothing=1;   // smoothing strength [0..1]
+
+//Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {    6, 6, 0.3, 0.3/3.0, 0.85, 1};
+
 char* ofilepath;
 int main(int argc, char *argv[] ){
-    
+
     // std::cout <<  argc << std::endl;  //argv[0] is the program name
     srand(time(NULL));
 
@@ -80,6 +91,30 @@ int main(int argc, char *argv[] ){
             else if (option == "-steps") {
                 steps = atoi(argv[i + 1]);
             }
+            else if (option == "-seedLine") {
+                seedLine = atoi(argv[i + 1]);
+            }
+            else if (option == "-seedOrientation") {
+                seedOrientation = atoi(argv[i + 1]);
+            }
+            else if (option == "-m") {
+                m = atoi(argv[i + 1]);
+            }
+            else if (option == "-niter") {
+                niter = atof(argv[i + 1]);
+            }
+            else if (option == "-jitter") {
+                jitter = atof(argv[i + 1]);
+            }
+            else if (option == "-amplitude") {
+                amplitude = atof(argv[i + 1]);
+            }
+            else if (option == "-decay") {
+                decay = atof(argv[i + 1]);
+            }
+            else if (option == "-smoothing") {
+                smoothing = atof(argv[i + 1]);
+            }
         }
     }
     if (width==0) width = 500;
@@ -90,45 +125,33 @@ int main(int argc, char *argv[] ){
     if (maxpeak==0) maxpeak = 5;
     if (numparts==0) numparts = 10;
     if (lines==0) lines = 5;
-
+    if (seedLine==0) seedLine = 10;
+    if (seedOrientation==0) seedOrientation = 20;
     //initialise myview
     View* myview = new View(width, height);
     GLuint vertexarrayID = myview->initialiseVertexBuffer();
 
-    //Get a jagged line to test
-    /*  for (int i=0; i<lines; i++){
-     
-     glm::vec3 color = glm::vec3((float)rand()/RAND_MAX,(float)rand()/RAND_MAX,(float)rand()/RAND_MAX);
-     JaggedLine* jline = new JaggedLine(view->getVertexArrayID(),color,GL_LINE_LOOP,densityline,maxpeak);
-     jline->calculateBoundingBox();
-     // jline->exportPoints();
-     view->addGeometry(jline);
-     }*/
-    
-    //create a new Fragmenter object with num parts to be fragmented
-    
+    //set user values to fragmenter
+    Fragmenter::RandomFractureOptions useroptions{m, niter, jitter, amplitude, decay, smoothing};
+    Fragmenter::setOptions(useroptions);
+   
+    //set user seeds
+    Fragmenter::setSeedLine(seedLine);
+    Fragment::setSeedOrientation(seedOrientation);
+
     Fragmenter* fragmenter = new Fragmenter(numparts,glm::vec3(1,0,0),radius,densityline,densitysphere,maxpeak,myview);
-    //this is a test fragment to check how it is working
-  //  for (int i=0;i<10;i++){
-   /* JaggedLine* jline = new JaggedLine(vertexarrayID,glm::vec3(0.0,0.0,1.0),GL_LINE_STRIP,GEO_FRAGMENT,densityline,maxpeak,true);
-    jline->setNumSteps(steps);
-    jline->calculateBoundingBox();
-    // jline->exportPoints();
-    jline->setNumSteps(steps);
-    // ************ TEST the partition of the first fragment, to be replaced by: fragment()
-    fragmenter->testFragment(jline);
-    myview->addGeometry(jline);*/
 
     fragmenter->fragment();
+   // fragmenter->testCurve();
 
+#if 1
 
-    
     
     Geometry* geo = new Geometry(vertexarrayID,glm::vec3(0.7,0.7,0.7),GL_POINTS,GEO_SHAPE);
     geo->setDensity(densitysphere);
     geo->generateSphere();
     geo->calculateBoundingBox();
-    // geo->exportPoints();
+     geo->exportPoints();
     myview->addGeometry(geo);
 
     myview->calculateMaxBoundingBox();
@@ -148,6 +171,5 @@ int main(int argc, char *argv[] ){
         std::cout << "ERROR: The game has not been initialised correctly" << std::endl;
         return 0;
     }
-    
-  
+#endif
 }

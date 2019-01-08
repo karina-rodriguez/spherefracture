@@ -53,7 +53,7 @@ private:
     double densitysphere;
     double maxpeak;
 
-
+    static int seedLine;
     static const double  epsilon;
     static const int evalPoints;
 
@@ -71,8 +71,10 @@ public:
     int testFragment(std::vector<glm::dvec3> jline);
     void listAllFragments();
     int createPolytope();
-        
-    
+    int testCurve();
+    static void setOptions(const RandomFractureOptions&  randomFractureOptions);
+    static void setSeedLine(const int&  seed);
+
 
     static bool  computeIntersection(glm::dvec3 poly1p1, glm::dvec3 poly1p2, glm::dvec3 poly2p1, glm::dvec3 poly2p2,glm::dvec3& intersectionpoint);
     static bool checkFragmentSizeSuitable(const std::vector<glm::dvec3> poly);
@@ -85,6 +87,8 @@ public:
                  std::vector<glm::dvec3> &result1,
                  std::vector<glm::dvec3> &result2);
     static std::vector<glm::dvec3>  spherePolyRandomFracture(const RandomFractureOptions &opt=defaultRandomFractureOptions);
+    static std::vector<glm::dvec3>  testSpherePolyRandomFracture(RandomFractureOptions &opt);
+    
     static bool  spherePolyIntersect(const std::vector<glm::dvec3> &poly1,
                                      const std::vector<glm::dvec3> &poly2,
                                      std::vector<glm::dvec3> &result);

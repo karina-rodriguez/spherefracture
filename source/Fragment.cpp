@@ -12,6 +12,8 @@ template <typename T>
 inline T const& max (T const& a, T const& b, T const& c) { return std::max(std::max(a, b), c); }
 
 const double  Fragment::epsilon = 1e-6;
+int Fragment::seedOrientation = 1;
+
 
 Fragment::Fragment(GLuint vertexarrayIDT,
                    glm::vec3 colour,
@@ -548,4 +550,7 @@ void Fragment::createSTLwithlargecones(int counterfile){
     //exportScene(filename, verticespolytope, normalspolytope, indicespolytope);
     myOwnExportSceneSTL(filename, verticespolytope, normalspolytope);
     
+}
+void Fragment::setSeedOrientation(const int&  seed){
+    seedOrientation=seed;
 }

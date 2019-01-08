@@ -4,12 +4,41 @@
 
 const double  Fragmenter::epsilon = 1e-10;
 const int Fragmenter::evalPoints = 2;
+int Fragmenter::seedLine = 1;
+
+
+/*
+ public:
+ struct RandomFractureOptions {
+ int    m;           // initial vertex count; must be m>=3
+ float  niter;       // number of fractal iterations
+ float  jitter;      // relative jitter of midpoint along curve
+ float  amplitude;   // relative amplitude
+ float  decay;       // relative amplitude/jitter decay per iteration
+ float  smoothing;   // smoothing strength [0..1]
+ };
+ 
+ m: keep it tied to values of m=5+/-1.
+ 
+ niter: I wouldn’t play with it too much either. Very low values would give you a couple of straight segments, thus make things less “rough”, so you might be tempted to try that out, but I’d play with “decay” instead.
+ 
+ jitter: determines how regularly larger “jaggies” are distributed along the curve. (jitter=0 for “very regular”; jitter=0.99 for “crazily irregular”; current jitter=0.3 is probably reasonable; I wouldn’t go beyond 0.4)
+ 
+ amplitude: arguably the most intuitive parameter, determining how strongly the curve deviates from a smooth great circle. (It essentially scales the amplitude of the fractal over the great circle.)
+    Don't go over 0.4, it goes crazy then
+ 
+ decay: choose decay=1 to obtain maximum fractal dimension, that is, as you would zoom into the curve, it would look equally jaggy at every zoom level (assuming very high niter); choose values smaller than 1.0 to have the curve become smoother at finer scales.
+
+ 
+ 
+*/
 
 Fragmenter::RandomFractureOptions  Fragmenter::defaultRandomFractureOptions = {
 #if 0
     3, 7, 0.28, 0.28/3.0, 0.9, 0.0
 #elif 1
-    6, 6, 0.3, 0.3/3.0, 0.85, 0.0
+    6, 6, 0.3, 0.3/3.0, 0.85, 1
+    //6, 6, 0.3, 0.3/3.0, 0.85, 1
     //6, 6, 0.3, 0.3/3.0, 0.5, 0.0   // even smoother fractures...
 #else
     4, 6, 0.4, 0.4/2.5, 0.9, 0.0
@@ -62,6 +91,10 @@ std::vector<std::vector<glm::dvec3>> Fragmenter::allPoints = {p1,p2,p3,p4,p5,p6,
 Fragmenter::Fragmenter(int numparts, glm::vec3 color, double radius, double densityline, double densitysphere, double maxpeak, View* view): numparts(numparts), color(color), radius(radius), densityline(densityline), densitysphere(densitysphere), maxpeak(maxpeak), view(view) {
     actualparts = 0;
     
+    
+    
+    srand(seedLine);
+
     std::vector<glm::dvec3> fracture = spherePolyRandomFracture();
     //seed two initial parts to fragment
     Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::dvec3(0.0,1.0,0.0),GL_LINE_STRIP,GEO_FRAGMENT,fracture);
@@ -465,6 +498,59 @@ std::vector<glm::dvec3>  Fragmenter::spherePolyRandomFracture(const RandomFractu
     return poly;
 }
 
+std::vector<glm::dvec3>  Fragmenter::testSpherePolyRandomFracture(RandomFractureOptions &opt)
+{
+    auto  A = randRotationMatrix3();
+    
+    std::vector<glm::dvec3>  poly;
+    {
+        poly.reserve(opt.m);
+        const double  f = 2.0 * M_PI / opt.m;
+        for (int i=0; i<opt.m; ++i) {
+            glm::dvec3  v(f*i + f*opt.jitter * randSigned(),
+                          f*opt.amplitude * randSigned(),
+                          0.0);
+            poly.push_back(A * glm::dvec3(cos(v.x)*cos(v.y), sin(v.x)*cos(v.y), sin(v.y)));
+        }
+    }
+    
+    {
+        double  jitter = opt.jitter;
+        double  amplitude = opt.amplitude;
+        for (int iter=0; iter<opt.niter; ++iter) {
+            std::vector<glm::dvec3>  newPoly;
+            newPoly.reserve(2 * poly.size());
+            for (int idx=0; idx<(int)poly.size(); ++idx) {
+                int  idxSucc = (idx + 1) % ((int)poly.size());
+                
+                auto  w = glm::normalize(glm::cross(poly[idx], poly[idxSucc]));
+                auto  u = poly[idx];
+                auto  v = glm::cross(w, u);
+                
+                double  arclen = acos(glm::dot(poly[idxSucc], u));
+                double  midarclen = arclen * (0.5+jitter * randSigned());
+                double  midampl = arclen * opt.amplitude * randSigned();
+                auto  midpoint =
+                u * (cos(midarclen) * cos(midampl))
+                + v * (sin(midarclen) * cos(midampl))
+                + w * sin(midampl);
+                
+                newPoly.push_back(poly[idx]);
+                newPoly.push_back(midpoint);
+            }
+            poly.swap(newPoly);
+            
+            jitter *= opt.decay;
+            amplitude *= opt.decay;
+        }
+    }
+    
+    if (opt.smoothing != 0.0)
+        spherePolySmooth(poly, opt.smoothing);
+    
+    return poly;
+}
+
 bool  Fragmenter::epsilonSame(const glm::dvec3 &a, const glm::dvec3 &b, double epsilonScale)
 {
     return glm::length(a - b) <= epsilonScale*epsilon;
@@ -777,3 +863,94 @@ bool Fragmenter::checkAtLeastPointsHitFragment(const int numpoints, std::vector<
     return 0;
 }
 
+int Fragmenter::testCurve(){
+    /*
+     public:
+     struct RandomFractureOptions {
+     int    m;           // initial vertex count; must be m>=3
+     float  niter;       // number of fractal iterations
+     float  jitter;      // relative jitter of midpoint along curve
+     float  amplitude;   // relative amplitude
+     float  decay;       // relative amplitude/jitter decay per iteration
+     float  smoothing;   // smoothing strength [0..1]
+     };
+     
+     m: keep it tied to values of m=5+/-1.
+     
+     niter: I wouldn’t play with it too much either. Very low values would give you a couple of straight segments, thus make things less “rough”, so you might be tempted to try that out, but I’d play with “decay” instead.
+     
+     jitter: determines how regularly larger “jaggies” are distributed along the curve. (jitter=0 for “very regular”; jitter=0.99 for “crazily irregular”; current jitter=0.3 is probably reasonable; I wouldn’t go beyond 0.4)
+     
+     amplitude: arguably the most intuitive parameter, determining how strongly the curve deviates from a smooth great circle. (It essentially scales the amplitude of the fractal over the great circle.)
+     Don't go over 0.4, it goes crazy then
+     
+     decay: choose decay=1 to obtain maximum fractal dimension, that is, as you would zoom into the curve, it would look equally jaggy at every zoom level (assuming very high niter); choose values smaller than 1.0 to have the curve become smoother at finer scales.
+     
+     
+     
+     */
+    //Fragmenter::RandomFractureOptions option0{6, 6, 0.3, 0.3/3.0, 0.85, 0};
+    //Fragmenter::RandomFractureOptions option1{6, 6, 0.3, 0.3/3.0, 0.85, 1};
+    //TO DO: for amplitude
+    //Fragmenter::RandomFractureOptions option2{4, 4, 0.5, 0.1, 0.5, 1.0};
+    //Fragmenter::RandomFractureOptions option5{4, 4, 0.5, 0.6, 0.5, 1.0};
+
+    Fragmenter::RandomFractureOptions option2{4, 4, 0.5, 0.5, 0.5, 0.0};
+    Fragmenter::RandomFractureOptions option3{4, 4, 0.5, 0.5, 0.5, 0.0};
+    Fragmenter::RandomFractureOptions option4{4, 4, 0.5, 0.5, 0.5, 0.0};
+    Fragmenter::RandomFractureOptions option5{4, 4, 0.5, 0.5, 0.5, 0.0};
+
+    
+  /*  Fragmenter::RandomFractureOptions option31{6, 6, 0.5, 0.5/3.0, 0.1, 0};
+        //Fragmenter::RandomFractureOptions option4{6, 6, 0.5, 0.5/3.0, 0.1, 1};
+
+    std::vector<glm::dvec3> fracture = testSpherePolyRandomFracture(option0);
+    //seed two initial parts to fragment
+    Fragment* fragment0 = new Fragment(view->getVertexArrayID(), glm::dvec3(1.0,0.0,0.0),GL_LINE_LOOP,GEO_FRAGMENT,fracture);
+    fragment0->calculateBoundingBox();
+    view->addGeometry(fragment0);
+    
+    
+    std::vector<glm::dvec3> fracture1 = testSpherePolyRandomFracture(option1);
+    //seed two initial parts to fragment
+    Fragment* fragment1 = new Fragment(view->getVertexArrayID(), glm::dvec3(0.0,1.0,0.0),GL_LINE_LOOP,GEO_FRAGMENT,fracture1);
+    fragment1->calculateBoundingBox();
+    view->addGeometry(fragment1);
+    */
+    std::vector<glm::dvec3> fracture2 = testSpherePolyRandomFracture(option2);
+    
+    //seed two initial parts to fragment
+    Fragment* fragment2 = new Fragment(view->getVertexArrayID(), glm::dvec3(0.0,0.0,1.0),GL_LINE_LOOP,GEO_FRAGMENT,fracture2);
+    fragment2->calculateBoundingBox();
+    view->addGeometry(fragment2);
+    
+    std::vector<glm::dvec3> fracture3 = testSpherePolyRandomFracture(option3);
+    
+    //seed two initial parts to fragment
+    Fragment* fragment3 = new Fragment(view->getVertexArrayID(), glm::dvec3(0.0,1.0,1.0),GL_LINE_LOOP,GEO_FRAGMENT,fracture3);
+    fragment3->calculateBoundingBox();
+    view->addGeometry(fragment3);
+
+    std::vector<glm::dvec3> fracture4 = testSpherePolyRandomFracture(option4);
+
+    //seed two initial parts to fragment
+    Fragment* fragment4 = new Fragment(view->getVertexArrayID(), glm::dvec3(0.0,1.0,0.0),GL_LINE_LOOP,GEO_FRAGMENT,fracture4);
+    fragment4->calculateBoundingBox();
+    view->addGeometry(fragment4);
+
+    
+    std::vector<glm::dvec3> fracture5 = testSpherePolyRandomFracture(option5);
+    
+    //seed two initial parts to fragment
+    Fragment* fragment5 = new Fragment(view->getVertexArrayID(), glm::dvec3(1.0,0.1,0.6),GL_LINE_LOOP,GEO_FRAGMENT,fracture5);
+    fragment5->calculateBoundingBox();
+    view->addGeometry(fragment5);
+
+    return 1;
+}
+void Fragmenter::setOptions(const RandomFractureOptions&  randomFractureOptions){
+   defaultRandomFractureOptions=randomFractureOptions;
+}
+void Fragmenter::setSeedLine(const int&  seed){
+    seedLine=seed;
+}
