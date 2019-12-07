@@ -134,7 +134,7 @@ bool loadAssImpMultipleMeshes(const char * path, std::vector<struct MyMesh> & my
 
 	//std::cout << scene->mMeshes[2];
 	if (!scene) {
-		fprintf(stderr, importer.GetErrorString());
+		//fprintf(stderr, importer.GetErrorString());
 		getchar();
 		return false;
 	}
@@ -220,7 +220,7 @@ bool loadAssImpMeshes(
 
 	//std::cout << scene->mMeshes[2];
 	if (!scene) {
-		fprintf(stderr, importer.GetErrorString());
+		//fprintf(stderr, importer.GetErrorString());
 		getchar();
 		return false;
 	}
@@ -285,7 +285,7 @@ bool loadAssImp(
 
 	//std::cout << scene->mMeshes[2];
 	if (!scene) {
-		fprintf(stderr, importer.GetErrorString());
+		//fprintf(stderr, importer.GetErrorString());
 		getchar();
 		return false;
 	}

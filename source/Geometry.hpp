@@ -1,5 +1,6 @@
 #pragma once
 // Include GLM
+#define GL_GLEXT_PROTOTYPES
 #include <glm/glm.hpp>
 #include <vector>
 #include "common/objloader.hpp"
